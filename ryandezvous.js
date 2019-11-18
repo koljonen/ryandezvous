@@ -1,11 +1,4 @@
-const myAirport = 'MLA';
-const herAirport = 'HHN';
-const departureDateFrom = '2019-11-25';
-const departureDateTo = '2019-11-29';
-const myDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=150'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', myAirport);
-const herDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=150'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', herAirport);
-const fareURLTemplate = 'https://services-api.ryanair.com/farfnd/3/oneWayFares/<from>/<to>/cheapestPerDay?market=en-mt&outboundMonthOfDate=<dateFrom>'.replace('<dateFrom>', departureDateFrom);
-
+const fareURLTemplate = 'https://services-api.ryanair.com/farfnd/3/oneWayFares/<from>/<to>/cheapestPerDay?market=en-mt&outboundMonthOfDate=<dateFrom>';
 const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function asyncForEach(array, callback) {
@@ -14,13 +7,13 @@ async function asyncForEach(array, callback) {
     }
 }
 
-function getDestinations(url, callback) {
-    $.getJSON(
+async function getDestinations(url, data, key) {
+    await $.getJSON(
         url,
         function(result) {
             console.log(url);
             console.log(result);
-            callback(result.fares.map(x => x.outbound.arrivalAirport.iataCode))
+            data[key] = result.fares.map(x => x.outbound.arrivalAirport.iataCode);
         }
     );
 }
@@ -31,11 +24,12 @@ function getCommonDestinations(data) {
     );
 }
 
-async function getFaresFromAirport(destinations, airport, fares) {
+async function getFaresFromAirport(destinations, airport, fares, dateFrom) {
     await asyncForEach(
         destinations,
         async function(toAirport) {
-            const fareURL = fareURLTemplate.replace('<from>', airport).replace('<to>', toAirport);
+            console.log('airport', airport, 'toAirport', toAirport);
+            const fareURL = fareURLTemplate.replace('<from>', airport).replace('<to>', toAirport).replace('<dateFrom>', dateFrom);;
             $.getJSON(
                 fareURL,
                 function(result) {
@@ -51,12 +45,12 @@ async function getFaresFromAirport(destinations, airport, fares) {
     );
 }
 
-async function getFares(destinations) {
+async function getFares(destinations, departureDateFrom, myAirport, herAirport) {
     myFares = {};
     herFares = {};
     candidates = [];
-    await getFaresFromAirport(destinations, myAirport, myFares);
-    await getFaresFromAirport(destinations, herAirport, herFares);
+    await getFaresFromAirport(destinations, myAirport, myFares, departureDateFrom);
+    await getFaresFromAirport(destinations, herAirport, herFares, departureDateFrom);
     console.log('mine', myFares);
     console.log('hers', herFares);
     for (airport in myFares) {
@@ -83,25 +77,29 @@ async function getFares(destinations) {
 }
 
 async function doStuff() {
+    const myAirport = $('#myAirport').val();
+    const herAirport = $('#herAirport').val();
+    const departureDateFrom = $('#departureDateFrom').val();
+    const departureDateTo = $('#departureDateTo').val();
+    const myDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=150'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', myAirport);
+    const herDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=150'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', herAirport);
+
     var candidates;
+    var data = {};
     await getDestinations(
         myDestinationsURL,
-        function(result) {
-            var data = {
-                myDestinations: result
-            };
-            getDestinations(
-                herDestinationsURL,
-                function(result) {
-                    data.herDestinations = result;
-                    getCommonDestinations(data);
-                    candidates = getFares(data.commonDestinations);
-                }
-            );
-        }
+        data,
+        'myDestinations'
     );
+    await getDestinations(
+        herDestinationsURL,
+        data,
+        'herDestinations'
+    );
+    await getCommonDestinations(data);
+    candidates = await getFares(data.commonDestinations, departureDateFrom, myAirport, herAirport);
 
-    var table = new Tabulator("#table", {
+    var table = await new Tabulator("#table", {
         height: 205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data: candidates, //assign data to table
         layout: "fitColumns", //fit columns to width of table (optional)
@@ -138,4 +136,9 @@ async function doStuff() {
     });
 }
 
-doStuff();
+window.onload = function(){
+    document.getElementById('departureDateFrom').valueAsDate = new Date();
+    var futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 30);
+    document.getElementById('departureDateTo').valueAsDate = futureDate;
+};
