@@ -6,10 +6,19 @@
     <title>Ryandezvous</title>
     <body>
         <form>
+            <label for="departureDateFrom">Departure from</label>
             <input type="date" id="departureDateFrom"/>
+            <label for="departureDateTo">to</label>
             <input type="date" id="departureDateTo"/>
+            </br>
+            <label for="myAirport">Your airport</label>
             <input id="myAirport" value="MLA"/>
+            <label for="herAirport">Their airport</label>
             <input id="herAirport" value="HHN"/>
+            </br>
+            <label for="maxDiffHours">Max arrival-time diff</label>
+            <input id="maxDiffHours" value="16"/>
+            </br>
             <button type="button" onclick="doStuff();">Submit</button>
         </form>
         <div id="table"></div>

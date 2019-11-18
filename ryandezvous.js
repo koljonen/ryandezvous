@@ -45,7 +45,7 @@ async function getFaresFromAirport(destinations, airport, fares, dateFrom) {
     );
 }
 
-async function getFares(destinations, departureDateFrom, myAirport, herAirport) {
+async function getFares(destinations, departureDateFrom, myAirport, herAirport, maxDiffHours) {
     myFares = {};
     herFares = {};
     candidates = [];
@@ -62,7 +62,7 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport) 
                 var myArrival = new Date(myFare.arrivalDate);
                 var herArrival = new Date(herFare.arrivalDate);
                 var arrivalDiffMinutes = (myArrival - herArrival) / 1000 / 60;
-                if (Math.abs(arrivalDiffMinutes) < 24 * 60) {
+                if (Math.abs(arrivalDiffMinutes) < maxDiffHours * 60) {
                     candidates.push({
                         day: myFare.day,
                         destination: airport,
@@ -88,6 +88,7 @@ async function doStuff() {
     const herAirport = $('#herAirport').val();
     const departureDateFrom = $('#departureDateFrom').val();
     const departureDateTo = $('#departureDateTo').val();
+    const maxDiffHours = $('#maxDiffHours').val();
     const myDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=150'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', myAirport);
     const herDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=150'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', herAirport);
 
@@ -104,10 +105,10 @@ async function doStuff() {
         'herDestinations'
     );
     await getCommonDestinations(data);
-    candidates = await getFares(data.commonDestinations, departureDateFrom, myAirport, herAirport);
+    candidates = await getFares(data.commonDestinations, departureDateFrom, myAirport, herAirport, maxDiffHours);
 
     var table = await new Tabulator("#table", {
-        height: 205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+        height: "100%", // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data: candidates, //assign data to table
         layout: "fitColumns", //fit columns to width of table (optional)
         columns: [ //Define Table Columns
