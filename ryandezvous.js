@@ -78,10 +78,12 @@ async function getFares(destinations) {
         console.log('my', airport, myFares[airport]);
         console.log('her', airport, herFares[airport]);
         console.table(candidates);
+        return candidates;
     }
 }
 
 async function doStuff() {
+    var candidates;
     await getDestinations(
         myDestinationsURL,
         function(result) {
@@ -93,36 +95,39 @@ async function doStuff() {
                 function(result) {
                     data.herDestinations = result;
                     getCommonDestinations(data);
-                    getFares(data.commonDestinations);
+                    candidates = getFares(data.commonDestinations);
                 }
             );
         }
     );
 
-    //create Tabulator on DOM element with id "example-table"
-    var table = new Tabulator("#tabulator-exampe", {
+    var table = new Tabulator("#table", {
         height: 205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        data: tabledata, //assign data to table
+        data: candidates, //assign data to table
         layout: "fitColumns", //fit columns to width of table (optional)
         columns: [ //Define Table Columns
             {
-                title: "Name",
-                field: "name",
+                title: "Date",
+                field: "day",
                 width: 150
             },
             {
-                title: "Age",
-                field: "age",
-                align: "left",
-                formatter: "progress"
+                title: "Price",
+                field: "price"
             },
             {
-                title: "Favourite Color",
-                field: "col"
+                title: "Destination",
+                field: "destination"
             },
             {
-                title: "Date Of Birth",
-                field: "dob",
+                title: "My time",
+                field: "myArrivalDate",
+                sorter: "date",
+                align: "center"
+            },
+            {
+                title: "Her time",
+                field: "herArrivalDate",
                 sorter: "date",
                 align: "center"
             },
