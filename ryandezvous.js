@@ -54,17 +54,24 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport) 
     console.log('mine', myFares);
     console.log('hers', herFares);
     for (airport in myFares) {
+        console.log('checking airport', airport);
         if (!airport in herFares) continue;
         myFares[airport].forEach(function(myFare) {
-            console.log(myFare);
+            console.log('myFare', myFare);
             herFares[airport].forEach(function(herFare) {
-                if (myFare.day === herFare.day) {
+                var myArrival = new Date(myFare.arrivalDate);
+                var herArrival = new Date(herFare.arrivalDate);
+                var arrivalDiffMinutes = (myArrival - herArrival) / 1000 / 60;
+                if (Math.abs(arrivalDiffMinutes) < 24 * 60) {
                     candidates.push({
                         day: myFare.day,
                         destination: airport,
                         myArrivalDate: myFare.arrivalDate,
                         herArrivalDate: herFare.arrivalDate,
-                        price: myFare.price.value + herFare.price.value
+                        myDepartureDate: myFare.departureDate,
+                        herDepartureDate: herFare.departureDate,
+                        price: myFare.price.value + herFare.price.value,
+                        arrivalDiffHours: Math.round(arrivalDiffMinutes / 60)
                     })
                 }
             });
@@ -72,8 +79,8 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport) 
         console.log('my', airport, myFares[airport]);
         console.log('her', airport, herFares[airport]);
         console.table(candidates);
-        return candidates;
     }
+    return candidates;
 }
 
 async function doStuff() {
@@ -128,6 +135,11 @@ async function doStuff() {
                 field: "herArrivalDate",
                 sorter: "date",
                 align: "center"
+            },
+            
+            {
+                title: "Hours diff",
+                field: "arrivalDiffHours"
             },
         ],
         rowClick: function(e, row) { //trigger an alert message when the row is clicked
