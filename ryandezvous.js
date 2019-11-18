@@ -13,14 +13,16 @@ async function getDestinations(url, data, key) {
         function(result) {
             console.log(url);
             console.log(result);
-            data[key] = result.fares.map(x => x.outbound.arrivalAirport.iataCode);
+            data[key] = result.fares.map(x => x.outbound.arrivalAirport);
         }
     );
 }
 
 function getCommonDestinations(data) {
+    console.log(data);
+    const herCodes = data.herDestinations.map(x => x.iataCode);
     data.commonDestinations = data.myDestinations.filter(
-        value => -1 !== data.herDestinations.indexOf(value)
+        value => -1 !== herCodes.indexOf(value.iataCode)
     );
 }
 
@@ -28,8 +30,8 @@ async function getFaresFromAirport(destinations, airport, fares, dateFrom) {
     await asyncForEach(
         destinations,
         async function(toAirport) {
-            console.log('airport', airport, 'toAirport', toAirport);
-            const fareURL = fareURLTemplate.replace('<from>', airport).replace('<to>', toAirport).replace('<dateFrom>', dateFrom);;
+            console.log('airport', airport, 'toAirport', toAirport.iataCode);
+            const fareURL = fareURLTemplate.replace('<from>', airport).replace('<to>', toAirport.iataCode).replace('<dateFrom>', dateFrom);;
             $.getJSON(
                 fareURL,
                 function(result) {
@@ -37,7 +39,7 @@ async function getFaresFromAirport(destinations, airport, fares, dateFrom) {
                     faresToAirport = result.outbound.fares.filter(
                         value => value.arrivalDate
                     );
-                    if (faresToAirport) fares[toAirport] = faresToAirport;
+                    if (faresToAirport) fares[toAirport.iataCode] = faresToAirport;
                 }
             );
             await waitFor(1000);
@@ -55,6 +57,7 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport, 
     console.log('hers', herFares);
     for (airport in myFares) {
         console.log('checking airport', airport);
+        const destination = (destinations.filter(d => d.iataCode === airport))[0];
         if (!airport in herFares) continue;
         myFares[airport].forEach(function(myFare) {
             console.log('myFare', myFare);
@@ -65,7 +68,8 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport, 
                 if (Math.abs(arrivalDiffMinutes) < maxDiffHours * 60) {
                     candidates.push({
                         day: myFare.day,
-                        destination: airport,
+                        destination: destination.name,
+                        destinationCode: airport,
                         myArrivalDate: myFare.arrivalDate,
                         herArrivalDate: herFare.arrivalDate,
                         myDepartureDate: myFare.departureDate,
