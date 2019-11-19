@@ -165,6 +165,6 @@ async function doStuff() {
 window.onload = function(){
     document.getElementById('departureDateFrom').valueAsDate = new Date();
     var futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 30);
+    futureDate.setDate(futureDate.getDate() + 5);
     document.getElementById('departureDateTo').valueAsDate = futureDate;
 };
