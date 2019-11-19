@@ -74,7 +74,7 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport, 
                         herArrivalDate: herFare.arrivalDate,
                         myDepartureDate: myFare.departureDate,
                         herDepartureDate: herFare.departureDate,
-                        price: myFare.price.value + herFare.price.value,
+                        price: Math.round(myFare.price.value + herFare.price.value),
                         arrivalDiffHours: Math.round(arrivalDiffMinutes / 60)
                     })
                 }
