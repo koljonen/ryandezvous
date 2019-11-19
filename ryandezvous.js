@@ -137,13 +137,13 @@ async function doStuff() {
                 headerFilter: true
             },
             {
-                title: "My time",
+                title: "Your arrival",
                 field: "myArrivalDate",
                 align: "center",
                 formatter:"datetime",
             },
             {
-                title: "Her time",
+                title: "Their arrival",
                 field: "herArrivalDate",
                 align: "center",
                 formatter:"datetime",
