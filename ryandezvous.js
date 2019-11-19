@@ -121,6 +121,9 @@ async function doStuff() {
                 field: "day",
                 width: 150,
                 formatter:"datetime",
+                formatterParams: {
+                    outputFormat:"YYYY-MM-DD ddd"
+                }
             },
             {
                 title: "Price",
