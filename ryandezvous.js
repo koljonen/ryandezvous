@@ -119,7 +119,8 @@ async function doStuff() {
             {
                 title: "Date",
                 field: "day",
-                width: 150
+                width: 150,
+                formatter:"datetime",
             },
             {
                 title: "Price",
@@ -132,14 +133,14 @@ async function doStuff() {
             {
                 title: "My time",
                 field: "myArrivalDate",
-                sorter: "date",
-                align: "center"
+                align: "center",
+                formatter:"datetime",
             },
             {
                 title: "Her time",
                 field: "herArrivalDate",
-                sorter: "date",
-                align: "center"
+                align: "center",
+                formatter:"datetime",
             },
             
             {
