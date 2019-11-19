@@ -127,11 +127,14 @@ async function doStuff() {
             },
             {
                 title: "Price",
-                field: "price"
+                field: "price",
+                headerFilter: true,
+                headerFilterFunc: (headerValue, rowValue) => headerValue >= rowValue,
             },
             {
                 title: "Destination",
-                field: "destination"
+                field: "destination",
+                headerFilter: true
             },
             {
                 title: "My time",
@@ -148,7 +151,9 @@ async function doStuff() {
             
             {
                 title: "Hours diff",
-                field: "arrivalDiffHours"
+                field: "arrivalDiffHours",
+                headerFilter: true,
+                headerFilterFunc: (headerValue, rowValue) => headerValue >= Math.abs(rowValue),
             },
         ],
         rowClick: function(e, row) { //trigger an alert message when the row is clicked
