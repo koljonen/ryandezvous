@@ -69,7 +69,7 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport, 
                 if (Math.abs(arrivalDiffMinutes) < maxDiffHours * 60) {
                     candidates.push({
                         day: myFare.day,
-                        destination: destination.name,
+                        destination: destination.name + ', ' + destination.countryName,
                         destinationCode: airport,
                         myArrivalDate: myFare.arrivalDate,
                         herArrivalDate: herFare.arrivalDate,
