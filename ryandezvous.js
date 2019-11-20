@@ -1,4 +1,5 @@
 const fareURLTemplate = 'https://services-api.ryanair.com/farfnd/3/oneWayFares/<from>/<to>/cheapestPerDay?market=en-mt&outboundMonthOfDate=<dateFrom>';
+const deepLinkTemplate = 'https://www.ryanair.com/mt/en/trip/flights/select?ADT=1&DateOut=<date>&Destination=<toAirport>&Origin=<fromAirport>'
 const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function asyncForEach(array, callback) {
@@ -156,8 +157,23 @@ async function doStuff() {
                 headerFilterFunc: (headerValue, rowValue) => headerValue >= Math.abs(rowValue),
             },
         ],
-        rowClick: function(e, row) { //trigger an alert message when the row is clicked
-            alert("Row " + row.getData().id + " Clicked!!!!");
+        rowClick: function(e, row) {
+            var myLink = deepLinkTemplate.replace(
+                '<date>', row.getData().day
+            ).replace(
+                '<fromAirport>', myAirport
+            ).replace(
+                '<toAirport>', row.getData().destinationCode
+            );
+            window.open(myLink, '_blank');
+            var herLink = deepLinkTemplate.replace(
+                '<date>', row.getData().day
+            ).replace(
+                '<fromAirport>', herAirport
+            ).replace(
+                '<toAirport>', row.getData().destinationCode
+            );
+            window.open(herLink, '_blank');
         },
     });
 }
