@@ -89,6 +89,7 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport, 
 }
 
 async function doStuff() {
+    $("#loading").show();
     const myAirport = $('#myAirport').val();
     const herAirport = $('#herAirport').val();
     const departureDateFrom = $('#departureDateFrom').val();
@@ -111,7 +112,7 @@ async function doStuff() {
     );
     await getCommonDestinations(data);
     candidates = await getFares(data.commonDestinations, departureDateFrom, myAirport, herAirport, maxDiffHours);
-
+    await $("#loading").hide();
     var table = await new Tabulator("#table", {
         height: "100%", // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data: candidates, //assign data to table
@@ -183,4 +184,5 @@ window.onload = function(){
     var futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 5);
     document.getElementById('departureDateTo').valueAsDate = futureDate;
+    $("#loading").hide();
 };

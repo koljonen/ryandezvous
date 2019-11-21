@@ -4,7 +4,22 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js"></script>
     <script type="text/javascript" src="ryandezvous.js"></script>
-    <title>Ryandezvous</title>
+    <head>
+        <title>Ryandezvous</title>
+        <style> 
+            #loading {
+                left: 315px;
+                position: absolute;
+                top: 173px;
+                font-size: 72px;
+                animation: orbit 7s linear infinite;
+            }
+            @keyframes orbit {
+                from {transform: rotate(0deg) translateX(150px) rotate(90deg);}
+                to {transform: rotate(360deg) translateX(150px) rotate(90deg);}
+            }
+        </style>
+    </head>
     <body>
         <form>
             <label for="departureDateFrom">Departure from</label>
@@ -19,6 +34,7 @@
             </br>
             <button type="button" onclick="doStuff();">Submit</button>
         </form>
+        <div id="loading">✈</div>
         <div id="table"></div>
     </body>
 </html>
