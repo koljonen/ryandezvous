@@ -145,6 +145,11 @@ async function doStuff() {
             {
                 title: "Price",
                 field: "price",
+                formatter: "money",
+                formatterParams: {
+                    symbol: "€",
+                    precision: 0
+                },
                 headerFilter: true,
                 headerFilterFunc: (headerValue, rowValue) => headerValue >= rowValue,
             },
