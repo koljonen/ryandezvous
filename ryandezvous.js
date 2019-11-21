@@ -212,6 +212,28 @@ window.onload = async function(){
     var futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 5);
     document.getElementById('departureDateTo').valueAsDate = futureDate;
+    await $.getJSON(
+        'https://www.ryanair.com/api/locate/4/common?embedded=airports',
+        function(result) {
+            result.airports.forEach(function(airport){
+               const option = $("<option>");
+               option.val(airport.iataCode);
+               option.text(airport.name);
+               $('.airports').append(option);
+            });
+        }
+    );
+    await $.getJSON(
+        'https://www.ryanair.com/api/geoloc/3/defaultAirport',
+        function(airport) {
+            console.log(airport.iataCode);
+            $("#myAirport").val(airport.iataCode);
+            $("#herAirport").val(
+                airport.iataCode === 'MLA' ? 'HHN' : 'MLA'
+            );
+        }
+    );
+
     await getCurrencyRates();
     endLoading();
 };
