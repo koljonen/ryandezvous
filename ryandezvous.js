@@ -5,12 +5,10 @@ var currencyExchangeRates;
 
 async function startLoading() {
     $("#loading").show();
-    $("#table").hide();
 }
 
 async function endLoading() {
     $("#loading").hide();
-    $("#table").show();
 }
 
 async function asyncForEach(array, callback) {
@@ -54,65 +52,59 @@ function getCommonDestinations(data) {
     );
 }
 
-async function getFaresFromAirport(destinations, airport, fares, dateFrom) {
-    await asyncForEach(
-        destinations,
-        async function(toAirport) {
-            console.log('airport', airport, 'toAirport', toAirport.iataCode);
-            const fareURL = fareURLTemplate.replace('<from>', airport).replace('<to>', toAirport.iataCode).replace('<dateFrom>', dateFrom);;
-            $.getJSON(
-                fareURL,
-                function(result) {
-                    console.log(fareURL, result);
-                    faresToAirport = result.outbound.fares.filter(
-                        value => value.arrivalDate
-                    );
-                    if (faresToAirport) fares[toAirport.iataCode] = faresToAirport;
-                }
+async function getFaresFromAirport(destination, airport, fares, dateFrom) {
+    const fareURL = fareURLTemplate.replace('<from>', airport).replace('<to>', destination.iataCode).replace('<dateFrom>', dateFrom);
+    await $.getJSON(
+        fareURL,
+        function(result) {
+            faresToAirport = result.outbound.fares.filter(
+                value => value.arrivalDate
             );
-            await waitFor(1000);
+            if (faresToAirport) faresToAirport.forEach(function(fare) {
+                fares.push(fare);
+            });
         }
     );
 }
 
-async function getFares(destinations, departureDateFrom, myAirport, herAirport, maxDiffHours) {
-    myFares = {};
-    herFares = {};
-    candidates = [];
-    await getFaresFromAirport(destinations, myAirport, myFares, departureDateFrom);
-    await getFaresFromAirport(destinations, herAirport, herFares, departureDateFrom);
-    console.log('mine', myFares);
-    console.log('hers', herFares);
-    for (airport in myFares) {
-        console.log('checking airport', airport);
-        const destination = (destinations.filter(d => d.iataCode === airport))[0];
-        if (!airport in herFares) continue;
-        myFares[airport].forEach(function(myFare) {
-            console.log('myFare', myFare);
-            herFares[airport].forEach(function(herFare) {
-                var myArrival = new Date(myFare.arrivalDate);
-                var herArrival = new Date(herFare.arrivalDate);
-                var arrivalDiffMinutes = (myArrival - herArrival) / 1000 / 60;
-                if (Math.abs(arrivalDiffMinutes) < maxDiffHours * 60) {
-                    candidates.push({
-                        day: myFare.day,
-                        destination: destination.name + ', ' + destination.countryName,
-                        destinationCode: airport,
-                        myArrivalDate: myFare.arrivalDate,
-                        herArrivalDate: herFare.arrivalDate,
-                        myDepartureDate: myFare.departureDate,
-                        herDepartureDate: herFare.departureDate,
-                        price: Math.round(toEUR(myFare.price) + toEUR(herFare.price)),
-                        arrivalDiffHours: Math.round(arrivalDiffMinutes / 60)
-                    })
-                }
+async function getFares(destinations, dateFrom, myAirport, herAirport, maxDiffHours, candidates) {
+    var maybeAdd = function(destination, myFare, herFare) {
+        const myArrival = new Date(myFare.arrivalDate);
+        const herArrival = new Date(herFare.arrivalDate);
+        const arrivalDiffMinutes = (myArrival - herArrival) / 1000 / 60;
+        if (Math.abs(arrivalDiffMinutes) < maxDiffHours * 60) {
+            candidates.push({
+                day: myFare.day,
+                destination: destination.name + ', ' + destination.countryName,
+                destinationCode: destination.iataCode,
+                myArrivalDate: myFare.arrivalDate,
+                herArrivalDate: herFare.arrivalDate,
+                myDepartureDate: myFare.departureDate,
+                herDepartureDate: herFare.departureDate,
+                price: Math.round(toEUR(myFare.price) + toEUR(herFare.price)),
+                arrivalDiffHours: Math.round(arrivalDiffMinutes / 60)
             });
-        });
-        console.log('my', airport, myFares[airport]);
-        console.log('her', airport, herFares[airport]);
-        console.table(candidates);
-    }
-    return candidates;
+        }
+    };
+    await asyncForEach(
+        destinations,
+        async function(destination) {
+            const myFares = [];
+            const herFares = [];
+            await getFaresFromAirport(destination, myAirport, myFares, dateFrom);
+            await waitFor(1000);
+            await getFaresFromAirport(destination, herAirport, herFares, dateFrom);
+            await myFares.forEach(
+                function(myFare) {
+                    herFares.forEach(
+                        function(herFare){
+                            maybeAdd(destination, myFare, herFare);
+                        }
+                    );
+                }
+            );
+            await waitFor(1000);
+    });
 }
 
 async function doStuff() {
@@ -138,11 +130,11 @@ async function doStuff() {
         'herDestinations'
     );
     await getCommonDestinations(data);
-    candidates = await getFares(data.commonDestinations, departureDateFrom, myAirport, herAirport, maxDiffHours);
-    await endLoading();
-    var table = await new Tabulator("#table", {
+    candidates = [];
+    var table = new Tabulator("#table", {
         height: "100%", // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data: candidates, //assign data to table
+        reactiveData:true,
         layout: "fitColumns", //fit columns to width of table (optional)
         columns: [ //Define Table Columns
             {
@@ -204,6 +196,8 @@ async function doStuff() {
             window.open(herLink, '_blank');
         },
     });
+    await getFares(data.commonDestinations, departureDateFrom, myAirport, herAirport, maxDiffHours, candidates);
+    endLoading();
 }
 
 window.onload = async function(){
