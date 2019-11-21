@@ -162,12 +162,18 @@ async function doStuff() {
                 field: "myArrivalDate",
                 align: "center",
                 formatter:"datetime",
+                formatterParams: {
+                    outputFormat:"YYYY-MM-DD HH:mm"
+                },
             },
             {
                 title: "Their arrival",
                 field: "herArrivalDate",
                 align: "center",
                 formatter:"datetime",
+                formatterParams: {
+                    outputFormat:"YYYY-MM-DD HH:mm"
+                },
             },
             
             {
