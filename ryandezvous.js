@@ -22,7 +22,6 @@ async function getCurrencyRates() {
     await $.getJSON(
         'https://api.exchangeratesapi.io/latest',
         function(result) {
-            console.log(result);
             currencyExchangeRates = result;
         }
     );
@@ -37,15 +36,12 @@ async function getDestinations(url, data, key) {
     await $.getJSON(
         url,
         function(result) {
-            console.log(url);
-            console.log(result);
             data[key] = result.fares.map(x => x.outbound.arrivalAirport);
         }
     );
 }
 
 function getCommonDestinations(data) {
-    console.log(data);
     const herCodes = data.herDestinations.map(x => x.iataCode);
     data.commonDestinations = data.myDestinations.filter(
         value => -1 !== herCodes.indexOf(value.iataCode)
