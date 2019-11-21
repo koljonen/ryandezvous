@@ -1,6 +1,7 @@
 const fareURLTemplate = 'https://services-api.ryanair.com/farfnd/3/oneWayFares/<from>/<to>/cheapestPerDay?market=en-mt&outboundMonthOfDate=<dateFrom>';
 const deepLinkTemplate = 'https://www.ryanair.com/mt/en/trip/flights/select?ADT=1&DateOut=<date>&Destination=<toAirport>&Origin=<fromAirport>'
 const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
+var currencyExchangeRates;
 
 async function startLoading() {
     $("#loading").show();
@@ -16,6 +17,22 @@ async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
         await callback(array[index], index, array);
     }
+}
+
+
+async function getCurrencyRates() {
+    await $.getJSON(
+        'https://api.exchangeratesapi.io/latest',
+        function(result) {
+            console.log(result);
+            currencyExchangeRates = result;
+        }
+    );
+}
+
+function toEUR(price) {
+    if(price.currencyCode === 'EUR') return price.value;
+    return price.value / currencyExchangeRates.rates[price.currencyCode];
 }
 
 async function getDestinations(url, data, key) {
@@ -85,7 +102,7 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport, 
                         herArrivalDate: herFare.arrivalDate,
                         myDepartureDate: myFare.departureDate,
                         herDepartureDate: herFare.departureDate,
-                        price: Math.round(myFare.price.value + herFare.price.value),
+                        price: Math.round(toEUR(myFare.price) + toEUR(herFare.price)),
                         arrivalDiffHours: Math.round(arrivalDiffMinutes / 60)
                     })
                 }
@@ -105,8 +122,8 @@ async function doStuff() {
     const departureDateFrom = $('#departureDateFrom').val();
     const departureDateTo = $('#departureDateTo').val();
     const maxDiffHours = 48;
-    const myDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=1500'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', myAirport);
-    const herDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>&priceValueTo=1500'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', herAirport);
+    const myDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', myAirport);
+    const herDestinationsURL = 'https://services-api.ryanair.com/farfnd/3/oneWayFares?&departureAirportIataCode=<airport>&language=en&limit=100&market=en-mt&offset=0&outboundDepartureDateFrom=<dateFrom>&outboundDepartureDateTo=<dateTo>'.replace('<dateFrom>', departureDateFrom).replace('<dateTo>', departureDateTo).replace('<airport>', herAirport);
 
     var candidates;
     var data = {};
@@ -189,10 +206,11 @@ async function doStuff() {
     });
 }
 
-window.onload = function(){
+window.onload = async function(){
     document.getElementById('departureDateFrom').valueAsDate = new Date();
     var futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 5);
     document.getElementById('departureDateTo').valueAsDate = futureDate;
+    await getCurrencyRates();
     endLoading();
 };
