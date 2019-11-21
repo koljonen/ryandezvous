@@ -128,11 +128,11 @@ async function doStuff() {
     await getCommonDestinations(data);
     candidates = [];
     var table = new Tabulator("#table", {
-        height: "100%", // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-        data: candidates, //assign data to table
+        height: "100%",
+        data: candidates,
         reactiveData:true,
-        layout: "fitColumns", //fit columns to width of table (optional)
-        columns: [ //Define Table Columns
+        layout: "fitColumns",
+        columns: [
             {
                 title: "Date",
                 field: "day",
