@@ -179,7 +179,7 @@ async function doStuff() {
         ],
         rowClick: function(e, row) {
             var myLink = deepLinkTemplate.replace(
-                '<date>', row.getData().day
+                '<date>', row.getData().myDepartureDate.split('T')[0]
             ).replace(
                 '<fromAirport>', myAirport
             ).replace(
@@ -187,7 +187,7 @@ async function doStuff() {
             );
             window.open(myLink, '_blank');
             var herLink = deepLinkTemplate.replace(
-                '<date>', row.getData().day
+                '<date>', row.getData().herDepartureDate.split('T')[0]
             ).replace(
                 '<fromAirport>', herAirport
             ).replace(
