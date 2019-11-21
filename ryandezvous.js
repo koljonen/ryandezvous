@@ -2,6 +2,16 @@ const fareURLTemplate = 'https://services-api.ryanair.com/farfnd/3/oneWayFares/<
 const deepLinkTemplate = 'https://www.ryanair.com/mt/en/trip/flights/select?ADT=1&DateOut=<date>&Destination=<toAirport>&Origin=<fromAirport>'
 const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
 
+async function startLoading() {
+    $("#loading").show();
+    $("#table").hide();
+}
+
+async function endLoading() {
+    $("#loading").hide();
+    $("#table").show();
+}
+
 async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index++) {
         await callback(array[index], index, array);
@@ -89,7 +99,7 @@ async function getFares(destinations, departureDateFrom, myAirport, herAirport, 
 }
 
 async function doStuff() {
-    $("#loading").show();
+    await startLoading();
     const myAirport = $('#myAirport').val();
     const herAirport = $('#herAirport').val();
     const departureDateFrom = $('#departureDateFrom').val();
@@ -112,7 +122,7 @@ async function doStuff() {
     );
     await getCommonDestinations(data);
     candidates = await getFares(data.commonDestinations, departureDateFrom, myAirport, herAirport, maxDiffHours);
-    await $("#loading").hide();
+    await endLoading();
     var table = await new Tabulator("#table", {
         height: "100%", // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data: candidates, //assign data to table
@@ -184,5 +194,5 @@ window.onload = function(){
     var futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 5);
     document.getElementById('departureDateTo').valueAsDate = futureDate;
-    $("#loading").hide();
+    endLoading();
 };
