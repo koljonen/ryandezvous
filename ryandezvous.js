@@ -1,5 +1,5 @@
 const fareURLTemplate = 'https://services-api.ryanair.com/farfnd/3/oneWayFares/<from>/<to>/cheapestPerDay?market=en-mt&outboundMonthOfDate=<dateFrom>';
-const deepLinkTemplate = 'https://www.ryanair.com/mt/en/trip/flights/select?ADT=1&DateOut=<date>&Destination=<toAirport>&Origin=<fromAirport>'
+const deepLinkTemplate ='http://www.kiwi.com/deep?affilid=koljonenryandezvous&departure=<date>&from=<fromAirport>&to=<toAirport>';
 const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
 var currencyExchangeRates;
 
