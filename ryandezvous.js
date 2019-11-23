@@ -228,7 +228,6 @@ window.onload = async function(){
     await $.getJSON(
         'https://www.ryanair.com/api/geoloc/3/defaultAirport',
         function(airport) {
-            console.log(airport.iataCode);
             $("#myAirport").val(airport.iataCode);
             $("#herAirport").val(
                 airport.iataCode === 'MLA' ? 'HHN' : 'MLA'
