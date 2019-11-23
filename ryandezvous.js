@@ -215,7 +215,9 @@ window.onload = async function(){
     await $.getJSON(
         'https://www.ryanair.com/api/locate/4/common?embedded=airports',
         function(result) {
-            result.airports.forEach(function(airport){
+            result.airports.sort(function (a, b) {
+                return a.name.localeCompare(b.name);
+            }).forEach(function(airport){
                const option = $("<option>");
                option.val(airport.iataCode);
                option.text(airport.name);
