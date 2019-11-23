@@ -77,7 +77,7 @@ async function getFares(destinations, dateFrom, myAirport, herAirport, maxDiffHo
                 herArrivalDate: herFare.arrivalDate,
                 myDepartureDate: myFare.departureDate,
                 herDepartureDate: herFare.departureDate,
-                price: Math.round(toEUR(myFare.price) + toEUR(herFare.price)),
+                price: Math.round(1.2 * toEUR(myFare.price) + 1.2 * toEUR(herFare.price)),
                 arrivalDiffHours: Math.round(arrivalDiffMinutes / 60)
             });
         }
