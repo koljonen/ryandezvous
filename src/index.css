@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+#loading {
+    display:none;
+    left: 615px;
+    position: absolute;
+    top: 20px;
+    font-size: 48px;
+    animation: orbit 3s linear infinite;
+}
+@keyframes orbit {
+    from {transform: rotate(0deg) translateX(30px) rotate(90deg);}
+    to {transform: rotate(360deg) translateX(30px) rotate(90deg);}
+}
