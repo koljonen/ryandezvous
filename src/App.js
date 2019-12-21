@@ -194,7 +194,7 @@ class AirportSelector extends React.Component {
         this.setState({
             isLoading: true
         });
-        const locationJson = await fetch('http://kiwiproxy.herokuapp.com//locations/query?term=' + value);
+        const locationJson = await fetch('https://kiwiproxy.herokuapp.com//locations/query?term=' + value);
         const locations = await locationJson.json();
         this.setState({
             isLoading: false,
