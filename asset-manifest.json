@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/ryandezvous/static/css/main.ac49a6ed.chunk.css",
+    "main.js": "/ryandezvous/static/js/main.8f6bd2b1.chunk.js",
+    "main.js.map": "/ryandezvous/static/js/main.8f6bd2b1.chunk.js.map",
+    "runtime-main.js": "/ryandezvous/static/js/runtime-main.48225013.js",
+    "runtime-main.js.map": "/ryandezvous/static/js/runtime-main.48225013.js.map",
+    "static/css/2.07d92358.chunk.css": "/ryandezvous/static/css/2.07d92358.chunk.css",
+    "static/js/2.f03eca27.chunk.js": "/ryandezvous/static/js/2.f03eca27.chunk.js",
+    "static/js/2.f03eca27.chunk.js.map": "/ryandezvous/static/js/2.f03eca27.chunk.js.map",
+    "index.html": "/ryandezvous/index.html",
+    "precache-manifest.4f21cade198edfe953410ce6c540c126.js": "/ryandezvous/precache-manifest.4f21cade198edfe953410ce6c540c126.js",
+    "service-worker.js": "/ryandezvous/service-worker.js",
+    "static/css/2.07d92358.chunk.css.map": "/ryandezvous/static/css/2.07d92358.chunk.css.map",
+    "static/css/main.ac49a6ed.chunk.css.map": "/ryandezvous/static/css/main.ac49a6ed.chunk.css.map",
+    "static/js/2.f03eca27.chunk.js.LICENSE": "/ryandezvous/static/js/2.f03eca27.chunk.js.LICENSE",
+    "static/media/logo.svg": "/ryandezvous/static/media/logo.8a753739.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.48225013.js",
+    "static/css/2.07d92358.chunk.css",
+    "static/js/2.f03eca27.chunk.js",
+    "static/css/main.ac49a6ed.chunk.css",
+    "static/js/main.8f6bd2b1.chunk.js"
+  ]
+}
