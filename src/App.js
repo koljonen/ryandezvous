@@ -1,8 +1,12 @@
+import buildUrl from 'build-url';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
+import {
+  MuiPickersUtilsProvider,
+  DatePicker
+} from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import moment from "moment";
 import $ from "jquery";
@@ -17,6 +21,11 @@ import AirportSelector from './AirportSelector.js';
 
 // for tabulator
 window.moment = moment;
+moment.updateLocale('en', {
+  week: {
+    dow: 1,
+  },
+})
 
 const candidates = [];
 
@@ -140,24 +149,11 @@ function App() {
 
 export default App;
 
-const flightsTemplate = 'https://kiwiproxy.herokuapp.com/v2/search?fly_from=<airport>&dateFrom=<outDateFrom>&dateTo=<outDateTo>&returnFrom=<inDateFrom>&returnTo=<inDateTo>&curr=EUR&ret_from_diff_airport=0';
-
 function daysInTheFuture(howMany) {
     var futureDate = new Date();
     return moment(futureDate.setDate(futureDate.getDate() + howMany));
     return futureDate.toISOString().split('T')[0];
 }
-
-function getSuggestionValue(suggestion) {
-    return suggestion.code;
-}
-
-function renderSuggestion(suggestion) {
-    return (
-        <span>{suggestion.code} {suggestion.name}</span>
-    );
-}
-
 
 class Form extends React.Component {
     constructor(props) {
@@ -167,6 +163,9 @@ class Form extends React.Component {
             departureDateTo: daysInTheFuture(6),
             returnDateFrom: daysInTheFuture(9),
             returnDateTo: daysInTheFuture(10),
+            myAirport: {code:"MLA", name:"Malta"},
+            herAirport: {code:"FRA", name:"Frankfurt"},
+            destinationAirport: {}
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -184,9 +183,7 @@ class Form extends React.Component {
 
     async doStuff() {
         await startLoading();
-        const maxDiffHours = 72;
-        await getFares(this.state.myAirport, this.state.herAirport, maxDiffHours, candidates, this.state.departureDateFrom, this.state.departureDateTo, this.state.returnDateFrom, this.state.returnDateTo);
-        console.log(candidates);
+        await getFares(this.state);
         endLoading();
     }
 
@@ -195,28 +192,28 @@ class Form extends React.Component {
     render() {
         return (
             <form onSubmit={this.handleSubmit} >
-                <Grid container>
-                    <Grid item xs={6} sm={2}>
+                <Grid container spacing={2}>
+                    <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="departureDateFrom" utils={MomentUtils}>
-                            <DatePicker label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
+                            <DatePicker variant="inline" datepicker label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
-                    <Grid item xs={6} sm={2}>
+                    <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="departureDateTo" utils={MomentUtils}>
-                            <DatePicker label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
+                            <DatePicker variant="inline" datepicker label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
-                    <Grid item xs={6} sm={2}>
+                    <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="returnDateFrom" utils={MomentUtils}>
-                            <DatePicker label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
+                            <DatePicker variant="inline" datepicker label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
-                    <Grid item xs={6} sm={2}>
+                    <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="returnDateTo" utils={MomentUtils}>
-                            <DatePicker label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
+                            <DatePicker variant="inline" datepicker label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
-                    <Grid item xs={6} sm={2}>
+                    <Grid item sm={6} md={3} xl={2}>
                         <AirportSelector
                             id="myAirport"
                             name="myAirport"
@@ -226,7 +223,7 @@ class Form extends React.Component {
                             renderInput={this.renderInput}
                         />
                     </Grid>
-                    <Grid item xs={6} sm={2}>
+                    <Grid item sm={6} md={3} xl={2}>
                         <AirportSelector
                             id="herAirport"
                             name="herAirport"
@@ -236,7 +233,17 @@ class Form extends React.Component {
                             renderInput={this.renderInput}
                         />
                     </Grid>
-                    <Grid item xs={6} sm={2}>
+                    <Grid item sm={6} md={3} xl={2}>
+                        <AirportSelector
+                            id="destinationAirport"
+                            name="destinationAirport"
+                            value={this.state.destinationAirport}
+                            onChange={this.handleChange}
+                            label="Destination"
+                            renderInput={this.renderInput}
+                        />
+                    </Grid>
+                    <Grid item sm={6} md={3} xl={2}>
                         <Button variant="contained" color="primary" onClick={this.doStuff}>Search</Button>
                     </Grid>
                 </Grid>
@@ -256,22 +263,27 @@ async function endLoading() {
 
 function formatKiwiDate(date) {
     return date.format('DD/MM/YYYY');
-    console.log(date);
-    return date.split('-').reverse().join('/');
 }
 
-async function getFaresFromAirport(airport, fares, departureDateFrom, departureDateTo, returnDateFrom, returnDateTo) {
-    const fareURL = flightsTemplate.replace(
-        '<airport>', airport
-    ).replace(
-        '<outDateFrom>', formatKiwiDate(departureDateFrom)
-    ).replace(
-        '<outDateTo>', formatKiwiDate(departureDateTo)
-    ).replace(
-        '<inDateFrom>', formatKiwiDate(returnDateFrom)
-    ).replace(
-        '<inDateTo>', formatKiwiDate(returnDateTo)
-    );
+async function getFaresFromAirport(airport, state) {
+    const fares = [];
+    const fareURL = buildUrl(
+        'https://kiwiproxy.herokuapp.com',
+        {
+            path: "v2/search",
+            queryParams: {
+                fly_from: airport.code,
+                dateFrom: formatKiwiDate(state.departureDateFrom),
+                dateTo: formatKiwiDate(state.departureDateTo),
+                returnFrom: formatKiwiDate(state.returnDateFrom),
+                returnTo: formatKiwiDate(state.returnDateTo),
+                curr: 'EUR',
+                ret_from_diff_airport: 0,
+                fly_to: state.destinationAirport.code,
+                max_stopovers: 0
+            }
+        }
+    ).replace(/%2F/g, '/');
     await $.getJSON(
         fareURL,
         function(result) {
@@ -280,10 +292,12 @@ async function getFaresFromAirport(airport, fares, departureDateFrom, departureD
             });
         }
     );
+    return fares;
 }
 
-async function getFares(myAirport, herAirport, maxDiffHours, candidates, departureDateFrom, departureDateTo, returnDateFrom, returnDateTo) {
+async function getFares(state) {
     var maybeAdd = function(myFare, herFare) {
+        const maxDiffHours = 36;
         const myArrival = new Date(myFare.route[0].local_arrival);
         const herArrival = new Date(herFare.route[0].local_arrival);
         const myReturn = new Date(myFare.route[myFare.route.length - 1].local_arrival);
@@ -312,11 +326,8 @@ async function getFares(myAirport, herAirport, maxDiffHours, candidates, departu
             herLink: herFare.deep_link
         });
     };
-
-    const myFares = [];
-    const herFares = [];
-    await getFaresFromAirport(myAirport, myFares, departureDateFrom, departureDateTo, returnDateFrom, returnDateTo);
-    await getFaresFromAirport(herAirport, herFares, departureDateFrom, departureDateTo, returnDateFrom, returnDateTo);
+    const myFares = await getFaresFromAirport(state.myAirport, state);
+    const herFares = await getFaresFromAirport(state.herAirport, state);
     myFares.forEach(
         function(myFare) {
             herFares.forEach(

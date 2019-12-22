@@ -32,7 +32,7 @@ export default function AirportSelector(props) {
         props.onChange({
             target:{
                 name: props.name,
-                value: value.code
+                value: value
             }
         });
     }
@@ -75,6 +75,7 @@ export default function AirportSelector(props) {
             getOptionLabel={option => (typeof option === 'string' ? option : option.name)}
             filterOptions={x => x}
             options={options}
+            defaultvalue={options.value}
             onChange={handleChange}
             renderInput={params => (
                 <TextField
