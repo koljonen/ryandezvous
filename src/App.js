@@ -1,12 +1,19 @@
+import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
 import moment from "moment";
 import $ from "jquery";
+import Button from '@material-ui/core/Button';
 import React from 'react';
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { ReactTabulator } from 'react-tabulator';
-import Autosuggest from 'react-autosuggest';
 import logo from './logo.svg';
 import './App.css';
+import AirportSelector from './AirportSelector.js';
 
 // for tabulator
 window.moment = moment;
@@ -137,7 +144,7 @@ const flightsTemplate = 'https://kiwiproxy.herokuapp.com/v2/search?fly_from=<air
 
 function daysInTheFuture(howMany) {
     var futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + howMany);
+    return moment(futureDate.setDate(futureDate.getDate() + howMany));
     return futureDate.toISOString().split('T')[0];
 }
 
@@ -151,75 +158,6 @@ function renderSuggestion(suggestion) {
     );
 }
 
-class AirportSelector extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            value: '',
-            suggestions: [],
-            isLoading: false
-        };
-        this.lastRequestId = null;
-    }
-
-    onChange = (event, { newValue }) => {
-        this.setState({
-            value: newValue
-        });
-        this.props.onChange({
-            target:{
-                name:[this.props.name],
-                value:newValue
-            }
-        });
-    };
-
-    onSuggestionsFetchRequested = ({ value }) => {
-        this.loadSuggestions(value);
-    };
-
-    onSuggestionsClearRequested = () => {
-        this.setState({
-            suggestions: []
-        });
-    };
-  
-    async loadSuggestions(value) {
-        // Cancel the previous request
-        if (this.lastRequestId !== null) {
-            clearTimeout(this.lastRequestId);
-        }
-        
-        this.setState({
-            isLoading: true
-        });
-        const locationJson = await fetch('https://kiwiproxy.herokuapp.com//locations/query?term=' + value);
-        const locations = await locationJson.json();
-        this.setState({
-            isLoading: false,
-            suggestions: locations.locations
-        });
-    }
-
-    render() {
-        const { value, suggestions, isLoading } = this.state;
-        const inputProps = {
-            placeholder: this.props.placeholder,
-            value,
-            onChange: this.onChange
-        };
-        return (
-            <Autosuggest 
-            suggestions={suggestions}
-            onSuggestionsFetchRequested={this.onSuggestionsFetchRequested}
-            onSuggestionsClearRequested={this.onSuggestionsClearRequested}
-            getSuggestionValue={getSuggestionValue}
-            renderSuggestion={renderSuggestion}
-            inputProps={inputProps} />
-        );
-    }
-}
 
 class Form extends React.Component {
     constructor(props) {
@@ -252,28 +190,57 @@ class Form extends React.Component {
         endLoading();
     }
 
+    renderInput = input => input.name;
+
     render() {
         return (
             <form onSubmit={this.handleSubmit} >
-                <label>
-                    Departure:
-                    <input type="date" value={this.state.departureDateFrom} name="departureDateFrom" onChange={this.handleChange} />
-                </label>
-                <label>
-                     –
-                    <input type="date" value={this.state.departureDateTo} name="departureDateTo" onChange={this.handleChange} />
-                </label>
-                <label>
-                    Return:
-                    <input type="date" value={this.state.returnDateFrom} name="returnDateFrom" onChange={this.handleChange} />
-                </label>
-                <label>
-                     –
-                    <input type="date" value={this.state.returnDateTo} name="returnDateTo" onChange={this.handleChange} />
-                </label>
-                <AirportSelector name="myAirport" value={this.state.myAirport} onChange={this.handleChange} placeholder="Your origin"/>
-                <AirportSelector name="herAirport" value={this.state.herAirport} onChange={this.handleChange} placeholder="Their origin"/>
-                <input type="submit" value="Submit" onClick={this.doStuff}/>
+                <Grid container>
+                    <Grid item xs={6} sm={2}>
+                        <MuiPickersUtilsProvider name="departureDateFrom" utils={MomentUtils}>
+                            <DatePicker label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
+                            </MuiPickersUtilsProvider>
+                    </Grid>
+                    <Grid item xs={6} sm={2}>
+                        <MuiPickersUtilsProvider name="departureDateTo" utils={MomentUtils}>
+                            <DatePicker label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
+                            </MuiPickersUtilsProvider>
+                    </Grid>
+                    <Grid item xs={6} sm={2}>
+                        <MuiPickersUtilsProvider name="returnDateFrom" utils={MomentUtils}>
+                            <DatePicker label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
+                            </MuiPickersUtilsProvider>
+                    </Grid>
+                    <Grid item xs={6} sm={2}>
+                        <MuiPickersUtilsProvider name="returnDateTo" utils={MomentUtils}>
+                            <DatePicker label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
+                            </MuiPickersUtilsProvider>
+                    </Grid>
+                    <Grid item xs={6} sm={2}>
+                        <AirportSelector
+                            id="myAirport"
+                            name="myAirport"
+                            value={this.state.myAirport}
+                            onChange={this.handleChange}
+                            label="Your origin"
+                            renderInput={this.renderInput}
+                        />
+                    </Grid>
+                    <Grid item xs={6} sm={2}>
+                        <AirportSelector
+                            id="herAirport"
+                            name="herAirport"
+                            value={this.state.herAirport}
+                            onChange={this.handleChange}
+                            label="Their origin"
+                            renderInput={this.renderInput}
+                        />
+                    </Grid>
+                    <Grid item xs={6} sm={2}>
+                        <Button variant="contained" color="primary" onClick={this.doStuff}>Search</Button>
+                    </Grid>
+                </Grid>
+                
             </form>
         );
     }
@@ -288,6 +255,8 @@ async function endLoading() {
 }
 
 function formatKiwiDate(date) {
+    return date.format('DD/MM/YYYY');
+    console.log(date);
     return date.split('-').reverse().join('/');
 }
 
@@ -336,8 +305,6 @@ async function getFares(myAirport, herAirport, maxDiffHours, candidates, departu
             herReturnDate: herFare.route[herFare.route.length - 1].local_arrival,
             myDepartureDate: myFare.route[0].local_departure,
             herDepartureDate: herFare.route[0].local_departure,
-            myReturnDate: myFare.route[myFare.route.length - 1].local_departure,
-            herReturnDate: herFare.route[herFare.route.length - 1].local_departure,
             price: myFare.price + herFare.price,
             timeApart: moment.duration(msApart),
             timeTogether: moment.duration(msTogether),
