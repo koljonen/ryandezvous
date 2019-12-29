@@ -276,7 +276,7 @@ async function getFaresFromAirport(airport, state) {
                 returnTo: formatKiwiDate(state.returnDateTo),
                 curr: 'EUR',
                 ret_from_diff_airport: 0,
-                fly_to: state.destinationAirport.code,
+                fly_to: state.destinationAirport ? state.destinationAirport.code : undefined,
                 max_stopovers: 0
             }
         }
