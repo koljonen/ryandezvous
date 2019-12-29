@@ -1,8 +1,5 @@
 import buildUrl from 'build-url';
 import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import {
   MuiPickersUtilsProvider,
   DatePicker
@@ -15,7 +12,6 @@ import React from 'react';
 import 'react-tabulator/lib/styles.css';
 import 'react-tabulator/lib/css/tabulator.min.css';
 import { ReactTabulator } from 'react-tabulator';
-import logo from './logo.svg';
 import './App.css';
 import AirportSelector from './AirportSelector.js';
 
@@ -152,7 +148,6 @@ export default App;
 function daysInTheFuture(howMany) {
     var futureDate = new Date();
     return moment(futureDate.setDate(futureDate.getDate() + howMany));
-    return futureDate.toISOString().split('T')[0];
 }
 
 class Form extends React.Component {
@@ -195,22 +190,22 @@ class Form extends React.Component {
                 <Grid container spacing={2}>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="departureDateFrom" utils={MomentUtils}>
-                            <DatePicker variant="inline" datepicker label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
+                            <DatePicker variant="inline" label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="departureDateTo" utils={MomentUtils}>
-                            <DatePicker variant="inline" datepicker label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
+                            <DatePicker variant="inline" label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="returnDateFrom" utils={MomentUtils}>
-                            <DatePicker variant="inline" datepicker label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
+                            <DatePicker variant="inline" label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="returnDateTo" utils={MomentUtils}>
-                            <DatePicker variant="inline" datepicker label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
+                            <DatePicker variant="inline" label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>

@@ -16,19 +16,25 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+async function locationSearch(searchString) {
+    const locationJson = await fetch('https://kiwiproxy.herokuapp.com//locations/query?term=' + searchString);
+    const locations = await locationJson.json();
+    return locations.locations.map(location => Object.assign(location, {'input': searchString}))
+}
+
 export default function AirportSelector(props) {
     const classes = useStyles();
     const [inputValue, setInputValue] = React.useState('');
+    const [value, setValue] = React.useState('');
     const [options, setOptions] = React.useState([]);
-    const loaded = React.useRef(false);
-    const label = props.label;
-    loaded.current = true;
+    const [fetchedDefault, setFetchedDefault] = React.useState(false);
 
     const handleSearch = (event, value) => {
         setInputValue(event.target.value);
     };
 
     const handleChange = (event, value) => {
+        setValue(value);
         props.onChange({
             target:{
                 name: props.name,
@@ -38,36 +44,52 @@ export default function AirportSelector(props) {
     }
 
     const ourFetch = React.useMemo(
-        () =>
-            throttle(
-                async function(input, callback) {
-                    const locationJson = await fetch('https://kiwiproxy.herokuapp.com//locations/query?term=' + input.input);
-                    const locations = await locationJson.json();
-                    callback(locations.locations.map(location => Object.assign(location, {'input': input.input})));
-                },
-                200
-            ),
+        () => throttle(
+            async function(input, callback) {
+                const locations = await locationSearch(input);
+                callback(locations);
+            },
+            200
+        ),
         [],
     );
 
-    React.useEffect(() => {
-        let active = true;
-
-        if (inputValue === '') {
-            setOptions([]); 
-            return undefined;
-        }
-
-        ourFetch({ input: inputValue }, results => {
-            if (active) {
-                setOptions(results || []);
+    React.useEffect(
+        () => {
+            let active = true;
+            if(!fetchedDefault) {
+                setFetchedDefault(true);
+                if(props.value && props.value.code) {
+                    const mjau = async() => {
+                        const locations = await locationSearch(props.value.code);
+                        setOptions(locations);
+                        const selectedLocation = locations.filter(x => x.code === props.value.code)[0];
+                        setValue(selectedLocation);
+                    };
+                    mjau();
+                    return;
+                }
             }
-        });
 
-        return () => {
-            active = false;
-        };
-    }, [inputValue, ourFetch]);
+            if (inputValue === '') {
+                setOptions([]);
+                return undefined;
+            }
+            ourFetch(
+                inputValue,
+                results => {
+                    if (active) {
+                        setOptions(results || []);
+                    }
+                }
+            );
+
+            return () => {
+                active = false;
+            };
+        },
+        [inputValue, ourFetch]
+    );
 
     return (
         <Autocomplete
@@ -75,15 +97,14 @@ export default function AirportSelector(props) {
             getOptionLabel={option => (typeof option === 'string' ? option : option.name)}
             filterOptions={x => x}
             options={options}
-            defaultvalue={options.value}
             onChange={handleChange}
+            value={value}
             renderInput={params => (
                 <TextField
                     {...params}
-                    label={label}
+                    label={props.label}
                     variant="outlined"
                     fullWidth
-                    autoHighlight={true}
                     onChange={handleSearch}
                 />
             )}
