@@ -69,9 +69,12 @@ export default function AirportSelector(props) {
                     mjau();
                     return;
                 }
+                else if(!props.required) {
+                    setValue({name:"Anywhere"});
+                }
             }
 
-            if (inputValue === '') {
+            else if (inputValue === '') {
                 setOptions([]);
                 return undefined;
             }
