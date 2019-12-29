@@ -190,26 +190,27 @@ class Form extends React.Component {
                 <Grid container spacing={2}>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="departureDateFrom" utils={MomentUtils}>
-                            <DatePicker variant="inline" label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
+                            <DatePicker required variant="inline" label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="departureDateTo" utils={MomentUtils}>
-                            <DatePicker variant="inline" label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
+                            <DatePicker required variant="inline" label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="returnDateFrom" utils={MomentUtils}>
-                            <DatePicker variant="inline" label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
+                            <DatePicker required variant="inline" label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="returnDateTo" utils={MomentUtils}>
-                            <DatePicker variant="inline" label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
+                            <DatePicker required variant="inline" label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <AirportSelector
+                            required
                             id="myAirport"
                             name="myAirport"
                             value={this.state.myAirport}
@@ -220,6 +221,7 @@ class Form extends React.Component {
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <AirportSelector
+                            required
                             id="herAirport"
                             name="herAirport"
                             value={this.state.herAirport}

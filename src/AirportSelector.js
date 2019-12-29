@@ -101,6 +101,7 @@ export default function AirportSelector(props) {
             value={value}
             renderInput={params => (
                 <TextField
+                    required={props.required}
                     {...params}
                     label={props.label}
                     variant="outlined"
