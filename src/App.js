@@ -145,17 +145,16 @@ function App() {
 
 export default App;
 
-function daysInTheFuture(howMany) {
-    var futureDate = new Date();
-    return moment(futureDate.setDate(futureDate.getDate() + howMany));
+function nextThursday() {
+    return moment().add((moment().isoWeekday() >= 4  ? 12 : 4) - moment().isoWeekday(), 'days');
 }
 
 class Form extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            departureDate: daysInTheFuture(5),
-            returnDate: daysInTheFuture(9),
+            departureDate: nextThursday(),
+            returnDate: nextThursday().add(4, 'days'),
             myAirport: {id:"malta_mt", name:"Malta"},
             herAirport: {id:"frankfurt_de", name:"Frankfurt"},
             destinationAirport: {}
