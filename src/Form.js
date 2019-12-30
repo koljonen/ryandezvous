@@ -6,7 +6,6 @@ import {
 } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import moment from "moment";
-import $ from "jquery";
 import Button from '@material-ui/core/Button';
 import React from 'react';
 import AirportSelector from './AirportSelector.js';
@@ -109,7 +108,6 @@ function formatKiwiDate(date) {
 }
 
 async function getFaresFromAirport(airport, state) {
-    const fares = [];
     const fareURL = buildUrl(
         'https://kiwiproxy.herokuapp.com',
         {
@@ -127,15 +125,7 @@ async function getFaresFromAirport(airport, state) {
             }
         }
     ).replace(/%2F/g, '/');
-    await $.getJSON(
-        fareURL,
-        function(result) {
-            (result.data || []).forEach(function(fare) {
-                fares.push(fare);
-            });
-        }
-    );
-    return fares;
+    return (await (await fetch(fareURL)).json()).data;
 }
 
 async function getFares(state) {
