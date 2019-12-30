@@ -12,7 +12,6 @@ code {
 }
 
 #loading {
-    display:none;
     left: 615px;
     position: absolute;
     top: 20px;

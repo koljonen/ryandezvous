@@ -26,7 +26,7 @@ class Form extends React.Component {
             destinationAirport: {},
             candidates: this.props.candidates
         };
-
+        this.setLoading = props.setLoading;
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
@@ -41,9 +41,9 @@ class Form extends React.Component {
     }
 
     async doStuff() {
-        await startLoading();
+        this.setLoading(true);
         await getFares(this.state);
-        endLoading();
+        this.setLoading(false);
     }
 
     renderInput = input => input.name;
@@ -102,14 +102,6 @@ class Form extends React.Component {
             </form>
         );
     }
-}
-
-async function startLoading() {
-    $("#loading").show();
-}
-
-async function endLoading() {
-    $("#loading").hide();
 }
 
 function formatKiwiDate(date) {

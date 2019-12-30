@@ -15,13 +15,19 @@ moment.updateLocale('en', {
 const candidates = [];
 
 function App() {
+    const [loading, setLoading] = React.useState(false);
+
     return (
         <div>
-            <Form candidates={candidates}/>
-             <div id="loading">✈</div>
+            <Form candidates={candidates} setLoading={setLoading}/>
+             <Loading id="loading" loading={loading}/>
             <ResultsTable candidates={candidates}/>
         </div>
   );
+}
+
+function Loading(props) {
+    return <div id={props.id}>{props.loading ? '✈' : ''}</div>;
 }
 
 function parseDuration(s) {
