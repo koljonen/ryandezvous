@@ -59,11 +59,11 @@ export default function AirportSelector(props) {
             let active = true;
             if(!fetchedDefault) {
                 setFetchedDefault(true);
-                if(props.value && props.value.code) {
+                if(props.value && props.value.id) {
                     const mjau = async() => {
-                        const locations = await locationSearch(props.value.code);
+                        const locations = await locationSearch(props.value.name);
                         setOptions(locations);
-                        const selectedLocation = locations.filter(x => x.code === props.value.code)[0];
+                        const selectedLocation = locations.filter(x => x.id === props.value.id)[0];
                         setValue(selectedLocation);
                     };
                     mjau();

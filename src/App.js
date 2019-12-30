@@ -158,8 +158,8 @@ class Form extends React.Component {
             departureDateTo: daysInTheFuture(6),
             returnDateFrom: daysInTheFuture(9),
             returnDateTo: daysInTheFuture(10),
-            myAirport: {code:"MLA", name:"Malta"},
-            herAirport: {code:"FRA", name:"Frankfurt"},
+            myAirport: {id:"malta_mt", name:"Malta"},
+            herAirport: {id:"frankfurt_de", name:"Frankfurt"},
             destinationAirport: {}
         };
 
@@ -269,14 +269,14 @@ async function getFaresFromAirport(airport, state) {
         {
             path: "v2/search",
             queryParams: {
-                fly_from: airport.code,
+                fly_from: airport.id,
                 dateFrom: formatKiwiDate(state.departureDateFrom),
                 dateTo: formatKiwiDate(state.departureDateTo),
                 returnFrom: formatKiwiDate(state.returnDateFrom),
                 returnTo: formatKiwiDate(state.returnDateTo),
                 curr: 'EUR',
                 ret_from_diff_airport: 0,
-                fly_to: state.destinationAirport ? state.destinationAirport.code : undefined,
+                fly_to: state.destinationAirport ? state.destinationAirport.id : undefined,
                 max_stopovers: 0
             }
         }
