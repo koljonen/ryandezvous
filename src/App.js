@@ -154,10 +154,8 @@ class Form extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            departureDateFrom: daysInTheFuture(5),
-            departureDateTo: daysInTheFuture(6),
-            returnDateFrom: daysInTheFuture(9),
-            returnDateTo: daysInTheFuture(10),
+            departureDate: daysInTheFuture(5),
+            returnDate: daysInTheFuture(9),
             myAirport: {id:"malta_mt", name:"Malta"},
             herAirport: {id:"frankfurt_de", name:"Frankfurt"},
             destinationAirport: {}
@@ -189,23 +187,13 @@ class Form extends React.Component {
             <form onSubmit={this.handleSubmit} >
                 <Grid container spacing={2}>
                     <Grid item sm={6} md={3} xl={2}>
-                        <MuiPickersUtilsProvider name="departureDateFrom" utils={MomentUtils}>
-                            <DatePicker required variant="inline" label="Departure from" value={this.state.departureDateFrom} inputVariant="outlined" onChange={d => this.setState({departureDateFrom: d})}/>
+                        <MuiPickersUtilsProvider name="departureDate" utils={MomentUtils}>
+                            <DatePicker required variant="inline" label="Departure" value={this.state.departureDate} inputVariant="outlined" onChange={d => this.setState({departureDate: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
-                        <MuiPickersUtilsProvider name="departureDateTo" utils={MomentUtils}>
-                            <DatePicker required variant="inline" label="to" value={this.state.departureDateTo} inputVariant="outlined" onChange={d => this.setState({departureDateTo: d})}/>
-                            </MuiPickersUtilsProvider>
-                    </Grid>
-                    <Grid item sm={6} md={3} xl={2}>
-                        <MuiPickersUtilsProvider name="returnDateFrom" utils={MomentUtils}>
-                            <DatePicker required variant="inline" label="Return from" value={this.state.returnDateFrom} inputVariant="outlined" onChange={d => this.setState({returnDateFrom: d})}/>
-                            </MuiPickersUtilsProvider>
-                    </Grid>
-                    <Grid item sm={6} md={3} xl={2}>
-                        <MuiPickersUtilsProvider name="returnDateTo" utils={MomentUtils}>
-                            <DatePicker required variant="inline" label="to" value={this.state.returnDateTo} inputVariant="outlined" onChange={d => this.setState({returnDateTo: d})}/>
+                        <MuiPickersUtilsProvider name="returnDate" utils={MomentUtils}>
+                            <DatePicker required variant="inline" label="Return" value={this.state.returnDate} inputVariant="outlined" onChange={d => this.setState({returnDate: d})}/>
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
@@ -270,10 +258,10 @@ async function getFaresFromAirport(airport, state) {
             path: "v2/search",
             queryParams: {
                 fly_from: airport.id,
-                dateFrom: formatKiwiDate(state.departureDateFrom),
-                dateTo: formatKiwiDate(state.departureDateTo),
-                returnFrom: formatKiwiDate(state.returnDateFrom),
-                returnTo: formatKiwiDate(state.returnDateTo),
+                dateFrom: formatKiwiDate(state.departureDate),
+                dateTo: formatKiwiDate(state.departureDate),
+                returnFrom: formatKiwiDate(state.returnDate),
+                returnTo: formatKiwiDate(state.returnDate),
                 curr: 'EUR',
                 ret_from_diff_airport: 0,
                 fly_to: state.destinationAirport ? state.destinationAirport.id : undefined,
