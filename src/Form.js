@@ -1,0 +1,193 @@
+import buildUrl from 'build-url';
+import Grid from '@material-ui/core/Grid';
+import {
+  MuiPickersUtilsProvider,
+  DatePicker
+} from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
+import moment from "moment";
+import $ from "jquery";
+import Button from '@material-ui/core/Button';
+import React from 'react';
+import AirportSelector from './AirportSelector.js';
+
+function nextThursday() {
+    return moment().add((moment().isoWeekday() >= 4  ? 12 : 4) - moment().isoWeekday(), 'days');
+}
+
+class Form extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            departureDate: nextThursday(),
+            returnDate: nextThursday().add(4, 'days'),
+            myAirport: {id:"malta_mt", name:"Malta"},
+            herAirport: {id:"frankfurt_de", name:"Frankfurt"},
+            destinationAirport: {},
+            candidates: this.props.candidates
+        };
+
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.doStuff = this.doStuff.bind(this);
+    }
+
+    handleChange = function(e) {
+        this.setState({ [e.target.name]: e.target.value });
+    }
+
+    handleSubmit(event) {
+        event.preventDefault();
+    }
+
+    async doStuff() {
+        await startLoading();
+        await getFares(this.state);
+        endLoading();
+    }
+
+    renderInput = input => input.name;
+
+    render() {
+        return (
+            <form onSubmit={this.handleSubmit} >
+                <Grid container spacing={2}>
+                    <Grid item sm={6} md={3} xl={2}>
+                        <MuiPickersUtilsProvider name="departureDate" utils={MomentUtils}>
+                            <DatePicker required variant="inline" label="Departure" value={this.state.departureDate} inputVariant="outlined" onChange={d => this.setState({departureDate: d})}/>
+                            </MuiPickersUtilsProvider>
+                    </Grid>
+                    <Grid item sm={6} md={3} xl={2}>
+                        <MuiPickersUtilsProvider name="returnDate" utils={MomentUtils}>
+                            <DatePicker required variant="inline" label="Return" value={this.state.returnDate} inputVariant="outlined" onChange={d => this.setState({returnDate: d})}/>
+                            </MuiPickersUtilsProvider>
+                    </Grid>
+                    <Grid item sm={6} md={3} xl={2}>
+                        <AirportSelector
+                            required
+                            id="myAirport"
+                            name="myAirport"
+                            value={this.state.myAirport}
+                            onChange={this.handleChange}
+                            label="Your origin"
+                            renderInput={this.renderInput}
+                        />
+                    </Grid>
+                    <Grid item sm={6} md={3} xl={2}>
+                        <AirportSelector
+                            required
+                            id="herAirport"
+                            name="herAirport"
+                            value={this.state.herAirport}
+                            onChange={this.handleChange}
+                            label="Their origin"
+                            renderInput={this.renderInput}
+                        />
+                    </Grid>
+                    <Grid item sm={6} md={3} xl={2}>
+                        <AirportSelector
+                            id="destinationAirport"
+                            name="destinationAirport"
+                            value={this.state.destinationAirport}
+                            onChange={this.handleChange}
+                            label="Destination"
+                            renderInput={this.renderInput}
+                        />
+                    </Grid>
+                    <Grid item sm={6} md={3} xl={2}>
+                        <Button variant="contained" color="primary" onClick={this.doStuff}>Search</Button>
+                    </Grid>
+                </Grid>
+                
+            </form>
+        );
+    }
+}
+
+async function startLoading() {
+    $("#loading").show();
+}
+
+async function endLoading() {
+    $("#loading").hide();
+}
+
+function formatKiwiDate(date) {
+    return date.format('DD/MM/YYYY');
+}
+
+async function getFaresFromAirport(airport, state) {
+    const fares = [];
+    const fareURL = buildUrl(
+        'https://kiwiproxy.herokuapp.com',
+        {
+            path: "v2/search",
+            queryParams: {
+                fly_from: airport.id,
+                dateFrom: formatKiwiDate(state.departureDate),
+                dateTo: formatKiwiDate(state.departureDate),
+                returnFrom: formatKiwiDate(state.returnDate),
+                returnTo: formatKiwiDate(state.returnDate),
+                curr: 'EUR',
+                ret_from_diff_airport: 0,
+                fly_to: state.destinationAirport ? state.destinationAirport.id : undefined,
+                max_stopovers: 0
+            }
+        }
+    ).replace(/%2F/g, '/');
+    await $.getJSON(
+        fareURL,
+        function(result) {
+            (result.data || []).forEach(function(fare) {
+                fares.push(fare);
+            });
+        }
+    );
+    return fares;
+}
+
+async function getFares(state) {
+    var maybeAdd = function(myFare, herFare) {
+        const maxDiffHours = 36;
+        const myArrival = new Date(myFare.route[0].local_arrival);
+        const herArrival = new Date(herFare.route[0].local_arrival);
+        const myReturn = new Date(myFare.route[myFare.route.length - 1].local_arrival);
+        const herReturn = new Date(herFare.route[herFare.route.length - 1].local_arrival);
+        const arrivalDiff = Math.abs(myArrival - herArrival);
+        const returnDiff = Math.abs(myReturn - herReturn);
+        const msTogether = Math.min(myReturn, herReturn) - Math.max(myArrival, herArrival);
+        const msApart = arrivalDiff + returnDiff;
+        if(arrivalDiff + returnDiff > maxDiffHours * 60 * 60 * 1000) return;
+        if(myFare.cityCodeTo !== herFare.cityCodeTo) return;
+        if(msTogether < 24 * 60 * 60 * 1000) return;
+        if(msTogether <= msApart) return;
+        state.candidates.push({
+            day: myFare.route[0].local_departure,
+            destination: myFare.cityTo + ', ' + myFare.countryTo.name,
+            myArrivalDate: myFare.route[0].local_arrival,
+            herArrivalDate: herFare.route[0].local_arrival,
+            myReturnDate: myFare.route[myFare.route.length - 1].local_arrival,
+            herReturnDate: herFare.route[herFare.route.length - 1].local_arrival,
+            myDepartureDate: myFare.route[0].local_departure,
+            herDepartureDate: herFare.route[0].local_departure,
+            price: myFare.price + herFare.price,
+            timeApart: moment.duration(msApart),
+            timeTogether: moment.duration(msTogether),
+            myLink: myFare.deep_link,
+            herLink: herFare.deep_link
+        });
+    };
+    const myFares = await getFaresFromAirport(state.myAirport, state);
+    const herFares = await getFaresFromAirport(state.herAirport, state);
+    myFares.forEach(
+        function(myFare) {
+            herFares.forEach(
+                function(herFare){
+                    maybeAdd(myFare, herFare);
+                }
+            );
+        }
+    );
+}
+
+export default Form;
