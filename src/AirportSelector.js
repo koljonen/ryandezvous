@@ -73,7 +73,6 @@ export default function AirportSelector(props) {
                     setValue({name:"Anywhere"});
                 }
             }
-
             else if (inputValue === '') {
                 setOptions([]);
                 return undefined;
@@ -91,7 +90,7 @@ export default function AirportSelector(props) {
                 active = false;
             };
         },
-        [inputValue, ourFetch]
+        [inputValue, ourFetch, fetchedDefault, props.value, props.required]
     );
 
     return (
