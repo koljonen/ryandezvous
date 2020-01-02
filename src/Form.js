@@ -20,11 +20,12 @@ class Form extends React.Component {
         this.state = {
             departureDate: nextThursday(),
             returnDate: nextThursday().add(4, 'days'),
-            myAirport: {id:"malta_mt", name:"Malta"},
-            herAirport: {id:"frankfurt_de", name:"Frankfurt"},
-            destinationAirport: {},
-            candidates: this.props.candidates
+            destinationAirport: "",
+            candidates: this.props.candidates,
+            ...props.match.params
         };
+        this.state.departureDate = moment(this.state.departureDate);
+        this.state.returnDate = moment(this.state.returnDate);
         this.setLoading = props.setLoading;
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -41,6 +42,13 @@ class Form extends React.Component {
 
     async doStuff() {
         this.setLoading(true);
+        this.props.history.push(
+            `/${this.state.myAirport.id}/` +
+            `${this.state.herAirport.id}/` +
+            `${this.state.departureDate.format('YYYY-MM-DD')}/` +
+            `${this.state.returnDate.format('YYYY-MM-DD')}/` +
+            `${this.state.destinationAirport.id}`
+        );
         await getFares(this.state);
         this.setLoading(false);
     }
@@ -104,7 +112,7 @@ class Form extends React.Component {
 }
 
 function formatKiwiDate(date) {
-    return date.format('DD/MM/YYYY');
+    return moment(date).format('DD/MM/YYYY');
 }
 
 async function getFaresFromAirport(airport, state) {

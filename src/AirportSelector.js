@@ -16,10 +16,11 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-async function locationSearch(searchString) {
-    const locationJson = await fetch('https://kiwiproxy.herokuapp.com//locations/query?term=' + searchString);
+async function locationSearch({term, id}) {
+    const url = 'https://kiwiproxy.herokuapp.com/locations/' + (id ? `id?id=${id}` : `/query?&term=${term}`);
+    const locationJson = await fetch(url);
     const locations = await locationJson.json();
-    return locations.locations.map(location => Object.assign(location, {'input': searchString}))
+    return locations.locations.map(location => Object.assign(location, {'input': term || id}))
 }
 
 export default function AirportSelector(props) {
@@ -46,7 +47,7 @@ export default function AirportSelector(props) {
     const ourFetch = React.useMemo(
         () => throttle(
             async function(input, callback) {
-                const locations = await locationSearch(input);
+                const locations = await locationSearch({term: input});
                 callback(locations);
             },
             200
@@ -59,18 +60,20 @@ export default function AirportSelector(props) {
             let active = true;
             if(!fetchedDefault) {
                 setFetchedDefault(true);
-                if(props.value && props.value.id) {
+                if(props.value) {
                     const mjau = async() => {
-                        const locations = await locationSearch(props.value.name);
+                        const locations = await locationSearch({id: props.value});
                         setOptions(locations);
-                        const selectedLocation = locations.filter(x => x.id === props.value.id)[0];
-                        setValue(selectedLocation);
+                        const selectedLocation = locations.filter(
+                            x => x.code === props.value || x.code === props.id
+                        )[0];
+                        handleChange(undefined, selectedLocation);
                     };
                     mjau();
                     return;
                 }
                 else if(!props.required) {
-                    setValue({name:"Anywhere"});
+                    handleChange(undefined, {name:"Anywhere", code: ""});
                 }
             }
             else if (inputValue === '') {

@@ -14,12 +14,12 @@ moment.updateLocale('en', {
 
 const candidates = [];
 
-function App() {
+function App(props) {
     const [loading, setLoading] = React.useState(false);
 
     return (
         <div>
-            <Form candidates={candidates} setLoading={setLoading}/>
+            <Form candidates={candidates} setLoading={setLoading} {...props}/>
              <Loading id="loading" loading={loading}/>
             <ResultsTable candidates={candidates}/>
         </div>
