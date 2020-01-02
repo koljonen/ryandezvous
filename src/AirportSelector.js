@@ -65,7 +65,7 @@ export default function AirportSelector(props) {
                         const locations = await locationSearch({id: props.value});
                         setOptions(locations);
                         const selectedLocation = locations.filter(
-                            x => x.code === props.value || x.code === props.id
+                            x => x.code === props.value || x.id === props.value
                         )[0];
                         handleChange(undefined, selectedLocation);
                     };
