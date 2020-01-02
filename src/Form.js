@@ -47,7 +47,7 @@ class Form extends React.Component {
             `${this.state.herAirport.id}/` +
             `${this.state.departureDate.format('YYYY-MM-DD')}/` +
             `${this.state.returnDate.format('YYYY-MM-DD')}/` +
-            `${this.state.destinationAirport.id}`
+            (this.state.destinationAirport && this.state.destinationAirport.id ? `${this.state.destinationAirport.id}` : '')
         );
         await getFares(this.state);
         this.setLoading(false);
