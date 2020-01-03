@@ -20,7 +20,7 @@ function App(props) {
     return (
         <div>
             <Form candidates={candidates} setLoading={setLoading} {...props}/>
-             <Loading id="loading" loading={loading}/>
+            <Loading id="loading" loading={loading}/>
             <ResultsTable candidates={candidates}/>
         </div>
   );
