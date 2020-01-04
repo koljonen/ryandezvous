@@ -15,6 +15,8 @@ function nextThursday() {
     return moment().add((moment().isoWeekday() >= 4  ? 12 : 4) - moment().isoWeekday(), 'days');
 }
 
+const requiredParams = ['departureDate', 'returnDate', 'myAirport', 'herAirport'];
+
 class Form extends React.Component {
     constructor(props) {
         super(props);
@@ -39,6 +41,13 @@ class Form extends React.Component {
 
     handleSubmit(event) {
         event.preventDefault();
+    }
+
+    allowSubmit() {
+        return requiredParams.reduce(
+            (tot, par) => tot && !!this.state[par],
+            true
+        ) && !this.props.loading;
     }
 
     async doStuff() {
@@ -111,7 +120,7 @@ class Form extends React.Component {
                         />
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
-                        <Button variant="contained" color="primary" disabled={this.props.loading} onClick={this.doStuff}>Search</Button>
+                        <Button variant="contained" color="primary" disabled={!this.allowSubmit()} onClick={this.doStuff}>Search</Button>
                     </Grid>
                 </Grid>
                 
