@@ -92,6 +92,7 @@ export default function ResultsTable(props) {
             formatter: function(cell, formatterParams, onRendered){
                 return cell.getValue().humanize();
             },
+            sorter: (a, b) => a.asSeconds() - b.asSeconds(),
             headerFilter: true,
             headerFilterFunc: (headerValue, rowValue) => parseDuration(headerValue) <= rowValue,
         },
@@ -101,6 +102,7 @@ export default function ResultsTable(props) {
             formatter: function(cell, formatterParams, onRendered){
                 return cell.getValue().humanize();
             },
+            sorter: (a, b) => a.asSeconds() - b.asSeconds(),
             headerFilter: true,
             headerFilterFunc: (headerValue, rowValue) => parseDuration(headerValue) >= rowValue,
         },
