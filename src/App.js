@@ -16,10 +16,17 @@ const candidates = [];
 
 function App(props) {
     const [loading, setLoading] = React.useState(false);
-
+    const [candidates, setCandidates] = React.useState([]);
+    const addCandidates = (newCandidates) => setCandidates([...candidates, ...newCandidates]);
+    const clearCandidates = () => setCandidates([]);
     return (
         <div>
-            <Form candidates={candidates} setLoading={setLoading} {...props}/>
+            <Form
+                addCandidates={addCandidates}
+                clearCandidates={clearCandidates}
+                setLoading={setLoading}
+                {...props}
+            />
             <Loading id="loading" loading={loading}/>
             <ResultsTable candidates={candidates}/>
         </div>

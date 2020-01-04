@@ -21,7 +21,6 @@ class Form extends React.Component {
             departureDate: nextThursday(),
             returnDate: nextThursday().add(4, 'days'),
             destinationAirport: "",
-            candidates: this.props.candidates,
             ...props.match.params
         };
         this.state.departureDate = moment(this.state.departureDate);
@@ -42,6 +41,7 @@ class Form extends React.Component {
 
     async doStuff() {
         this.setLoading(true);
+        this.props.clearCandidates();
         this.props.history.push(
             `/${this.state.myAirport.id}/` +
             `${this.state.herAirport.id}/` +
@@ -49,7 +49,8 @@ class Form extends React.Component {
             `${this.state.returnDate.format('YYYY-MM-DD')}/` +
             (this.state.destinationAirport && this.state.destinationAirport.id ? `${this.state.destinationAirport.id}` : '')
         );
-        await getFares(this.state);
+        const newCandidates = await getFares(this.state);
+        this.props.addCandidates(newCandidates);
         this.setLoading(false);
     }
 
@@ -137,6 +138,7 @@ async function getFaresFromAirport(airport, state) {
 }
 
 async function getFares(state) {
+    const candidates = [];
     var maybeAdd = function(myFare, herFare) {
         const maxDiffHours = 36;
         const myArrival = new Date(myFare.route[0].local_arrival);
@@ -151,7 +153,7 @@ async function getFares(state) {
         if(myFare.cityCodeTo !== herFare.cityCodeTo) return;
         if(msTogether < 24 * 60 * 60 * 1000) return;
         if(msTogether <= msApart) return;
-        state.candidates.push({
+        candidates.push({
             day: myFare.route[0].local_departure,
             destination: myFare.cityTo + ', ' + myFare.countryTo.name,
             myArrivalDate: myFare.route[0].local_arrival,
@@ -178,6 +180,7 @@ async function getFares(state) {
             );
         }
     );
+    return candidates;
 }
 
 export default Form;
