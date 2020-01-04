@@ -25,7 +25,8 @@ class Form extends React.Component {
         };
         this.state.departureDate = moment(this.state.departureDate);
         this.state.returnDate = moment(this.state.returnDate);
-        this.setLoading = props.setLoading;
+        this.startLoading = props.startLoading;
+        this.finishLoading = props.finishLoading;
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
@@ -40,7 +41,7 @@ class Form extends React.Component {
     }
 
     async doStuff() {
-        this.setLoading(true);
+        this.startLoading();
         this.props.clearCandidates();
         this.props.history.push(
             `/${this.state.myAirport.id}/` +
@@ -51,7 +52,7 @@ class Form extends React.Component {
         );
         const newCandidates = await getFares(this.state);
         this.props.addCandidates(newCandidates);
-        this.setLoading(false);
+        this.finishLoading();
     }
 
     renderInput = input => input.name;
@@ -72,6 +73,8 @@ class Form extends React.Component {
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <AirportSelector
+                            startLoading={this.startLoading}
+                            finishLoading={this.finishLoading}
                             required
                             id="myAirport"
                             name="myAirport"
@@ -83,6 +86,8 @@ class Form extends React.Component {
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <AirportSelector
+                            startLoading={this.startLoading}
+                            finishLoading={this.finishLoading}
                             required
                             id="herAirport"
                             name="herAirport"
@@ -94,6 +99,8 @@ class Form extends React.Component {
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <AirportSelector
+                            startLoading={this.startLoading}
+                            finishLoading={this.finishLoading}
                             id="destinationAirport"
                             name="destinationAirport"
                             value={this.state.destinationAirport}
@@ -103,7 +110,7 @@ class Form extends React.Component {
                         />
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
-                        <Button variant="contained" color="primary" onClick={this.doStuff}>Search</Button>
+                        <Button variant="contained" color="primary" disabled={this.props.loading} onClick={this.doStuff}>Search</Button>
                     </Grid>
                 </Grid>
                 

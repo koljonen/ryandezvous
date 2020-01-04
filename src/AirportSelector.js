@@ -61,6 +61,7 @@ export default function AirportSelector(props) {
             if(!fetchedDefault) {
                 setFetchedDefault(true);
                 if(props.value) {
+                    props.startLoading();
                     const mjau = async() => {
                         const locations = await locationSearch({id: props.value});
                         setOptions(locations);
@@ -70,6 +71,7 @@ export default function AirportSelector(props) {
                         handleChange(undefined, selectedLocation);
                     };
                     mjau();
+                    props.finishLoading();
                     return;
                 }
                 else if(!props.required) {

@@ -15,8 +15,10 @@ moment.updateLocale('en', {
 const candidates = [];
 
 function App(props) {
-    const [loading, setLoading] = React.useState(false);
+    const [loading, setLoading] = React.useState(0);
     const [candidates, setCandidates] = React.useState([]);
+    const startLoading = () => setLoading(loading + 1);
+    const finishLoading = () => setLoading(loading - 1);
     const addCandidates = (newCandidates) => setCandidates([...candidates, ...newCandidates]);
     const clearCandidates = () => setCandidates([]);
     return (
@@ -24,10 +26,12 @@ function App(props) {
             <Form
                 addCandidates={addCandidates}
                 clearCandidates={clearCandidates}
-                setLoading={setLoading}
+                startLoading={startLoading}
+                finishLoading={finishLoading}
+                loading={loading > 0}
                 {...props}
             />
-            <Loading id="loading" loading={loading}/>
+            <Loading id="loading" loading={loading > 0}/>
             <ResultsTable candidates={candidates}/>
         </div>
   );
