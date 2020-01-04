@@ -1,3 +1,4 @@
+import { withRouter } from 'react-router-dom';
 import buildUrl from 'build-url';
 import Grid from '@material-ui/core/Grid';
 import {
@@ -190,4 +191,4 @@ async function getFares(state) {
     return candidates;
 }
 
-export default Form;
+export default withRouter(Form)

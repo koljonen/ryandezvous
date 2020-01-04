@@ -29,7 +29,6 @@ function App(props) {
                 startLoading={startLoading}
                 finishLoading={finishLoading}
                 loading={loading > 0}
-                {...props}
             />
             <Loading id="loading" loading={loading > 0}/>
             <ResultsTable candidates={candidates}/>
