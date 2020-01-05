@@ -42,38 +42,39 @@ function getKey(flight) {
     return flight.cityTo;
 }
 
-async function getFares(state) {
+function maybeAdd(myFare, herFare, candidates) {
+    const maxDiffHours = 36;
+    const myArrival = new Date(myFare.route[0].local_arrival);
+    const herArrival = new Date(herFare.route[0].local_arrival);
+    const myReturn = new Date(myFare.route[myFare.route.length - 1].local_arrival);
+    const herReturn = new Date(herFare.route[herFare.route.length - 1].local_arrival);
+    const arrivalDiff = Math.abs(myArrival - herArrival);
+    const returnDiff = Math.abs(myReturn - herReturn);
+    const msTogether = Math.min(myReturn, herReturn) - Math.max(myArrival, herArrival);
+    const msApart = arrivalDiff + returnDiff;
+    if(arrivalDiff + returnDiff > maxDiffHours * 60 * 60 * 1000) return;
+    if(myFare.cityCodeTo !== herFare.cityCodeTo) return;
+    if(msTogether < 24 * 60 * 60 * 1000) return;
+    if(msTogether <= msApart) return;
+    candidates.push({
+        day: myFare.route[0].local_departure,
+        destination: myFare.cityTo + ', ' + myFare.countryTo.name,
+        myArrivalDate: myFare.route[0].local_arrival,
+        herArrivalDate: herFare.route[0].local_arrival,
+        myReturnDate: myFare.route[myFare.route.length - 1].local_arrival,
+        herReturnDate: herFare.route[herFare.route.length - 1].local_arrival,
+        myDepartureDate: myFare.route[0].local_departure,
+        herDepartureDate: herFare.route[0].local_departure,
+        price: myFare.price + herFare.price,
+        timeApart: moment.duration(msApart),
+        timeTogether: moment.duration(msTogether),
+        myLink: myFare.deep_link,
+        herLink: herFare.deep_link
+    });
+};
+
+async function* getFares(state) {
     const candidates = [];
-    var maybeAdd = function(myFare, herFare) {
-        const maxDiffHours = 36;
-        const myArrival = new Date(myFare.route[0].local_arrival);
-        const herArrival = new Date(herFare.route[0].local_arrival);
-        const myReturn = new Date(myFare.route[myFare.route.length - 1].local_arrival);
-        const herReturn = new Date(herFare.route[herFare.route.length - 1].local_arrival);
-        const arrivalDiff = Math.abs(myArrival - herArrival);
-        const returnDiff = Math.abs(myReturn - herReturn);
-        const msTogether = Math.min(myReturn, herReturn) - Math.max(myArrival, herArrival);
-        const msApart = arrivalDiff + returnDiff;
-        if(arrivalDiff + returnDiff > maxDiffHours * 60 * 60 * 1000) return;
-        if(myFare.cityCodeTo !== herFare.cityCodeTo) return;
-        if(msTogether < 24 * 60 * 60 * 1000) return;
-        if(msTogether <= msApart) return;
-        candidates.push({
-            day: myFare.route[0].local_departure,
-            destination: myFare.cityTo + ', ' + myFare.countryTo.name,
-            myArrivalDate: myFare.route[0].local_arrival,
-            herArrivalDate: herFare.route[0].local_arrival,
-            myReturnDate: myFare.route[myFare.route.length - 1].local_arrival,
-            herReturnDate: herFare.route[herFare.route.length - 1].local_arrival,
-            myDepartureDate: myFare.route[0].local_departure,
-            herDepartureDate: herFare.route[0].local_departure,
-            price: myFare.price + herFare.price,
-            timeApart: moment.duration(msApart),
-            timeTogether: moment.duration(msTogether),
-            myLink: myFare.deep_link,
-            herLink: herFare.deep_link
-        });
-    };
     const myFares = await getFaresFromAirport(state.myAirport, state);
     const herFares = await getFaresFromAirport(state.herAirport, state);
     const myFaresDict = arrayToDict(myFares);
@@ -82,11 +83,11 @@ async function getFares(state) {
         myFare => {
             const herFaresFromCity = herFaresDict[getKey(myFare)];
             if(herFaresFromCity) herFaresFromCity.forEach(
-                herFare => maybeAdd(myFare, herFare)
+                herFare => maybeAdd(myFare, herFare, candidates)
             )
         }
     );
-    return {
+    yield {
         candidates: candidates,
         myFares: myFaresDict,
         herFares: herFaresDict
