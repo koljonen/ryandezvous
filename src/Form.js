@@ -90,12 +90,26 @@ class Form extends React.Component {
                 <Grid container spacing={2}>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="departureDate" utils={MomentUtils}>
-                            <DatePicker required variant="inline" label="Departure" value={this.state.departureDate} inputVariant="outlined" onChange={d => this.setState({departureDate: d})}/>
+                            <DatePicker
+                                required
+                                variant="inline"
+                                label="Departure"
+                                value={this.state.departureDate}
+                                inputVariant="outlined"
+                                onChange={d => this.setState({departureDate: d})}
+                            />
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
                         <MuiPickersUtilsProvider name="returnDate" utils={MomentUtils}>
-                            <DatePicker required variant="inline" label="Return" value={this.state.returnDate} inputVariant="outlined" onChange={d => this.setState({returnDate: d})}/>
+                            <DatePicker
+                                required
+                                variant="inline"
+                                label="Return"
+                                value={this.state.returnDate}
+                                inputVariant="outlined"
+                                onChange={d => this.setState({returnDate: d})}
+                            />
                             </MuiPickersUtilsProvider>
                     </Grid>
                     <Grid item sm={6} md={3} xl={2}>
