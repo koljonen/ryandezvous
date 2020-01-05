@@ -23,7 +23,20 @@ async function getFaresFromAirport(airport, state) {
             }
         }
     ).replace(/%2F/g, '/');
-    return (await (await fetch(fareURL)).json()).data;
+    const flights = (await (await fetch(fareURL)).json()).data;
+    return flights.reduce(
+        (map, flight) => {
+            if(getKey(flight) in map) map[getKey(flight)].push(flight);
+            else map[getKey(flight)] = [flight];
+            return map;
+        },
+        {}
+    );
+    
+}
+
+function getKey(flight) {
+    return flight.cityTo;
 }
 
 async function getFares(state) {
@@ -60,16 +73,21 @@ async function getFares(state) {
     };
     const myFares = await getFaresFromAirport(state.myAirport, state);
     const herFares = await getFaresFromAirport(state.herAirport, state);
-    myFares.forEach(
-        function(myFare) {
-            herFares.forEach(
-                function(herFare){
-                    maybeAdd(myFare, herFare);
-                }
-            );
-        }
+    Object.values(myFares).forEach(
+        myFaresToCity => myFaresToCity.forEach(
+            myFare => {
+                const herFaresFromCity = herFares[getKey(myFare)];
+                if(herFaresFromCity) herFaresFromCity.forEach(
+                    herFare => maybeAdd(myFare, herFare)
+                )
+            }
+        )
     );
-    return candidates;
+    return {
+        candidates: candidates,
+        myFares: myFares,
+        herFares: herFares
+    };
 }
 
 export default getFares;
