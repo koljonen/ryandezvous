@@ -34,6 +34,7 @@ class Form extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
+        this.setDepartureDate = this.setDepartureDate.bind(this);
         async function fillDefault(whichAirport, state) {
             if(state[whichAirport]) {
                 const url = `https://kiwiproxy.herokuapp.com/locations/id?id=${state[whichAirport]}`;
@@ -67,6 +68,13 @@ class Form extends React.Component {
         ) && !this.props.loading;
     }
 
+    setDepartureDate(newDate) {
+        if(newDate > this.state.returnDate) {
+            this.setState({returnDate: this.state.returnDate + (newDate - this.state.departureDate)});
+        }
+        this.setState({departureDate: newDate});
+    }
+
     async doStuff() {
         this.startLoading();
         this.props.clearCandidates();
@@ -92,11 +100,12 @@ class Form extends React.Component {
                         <MuiPickersUtilsProvider name="departureDate" utils={MomentUtils}>
                             <DatePicker
                                 required
+                                disablePast
                                 variant="inline"
                                 label="Departure"
                                 value={this.state.departureDate}
                                 inputVariant="outlined"
-                                onChange={d => this.setState({departureDate: d})}
+                                onChange={this.setDepartureDate}
                             />
                             </MuiPickersUtilsProvider>
                     </Grid>
@@ -109,6 +118,7 @@ class Form extends React.Component {
                                 value={this.state.returnDate}
                                 inputVariant="outlined"
                                 onChange={d => this.setState({returnDate: d})}
+                                minDate={this.state.departureDate}
                             />
                             </MuiPickersUtilsProvider>
                     </Grid>
