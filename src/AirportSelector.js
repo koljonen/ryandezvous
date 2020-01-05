@@ -26,16 +26,13 @@ async function locationSearch({term, id}) {
 export default function AirportSelector(props) {
     const classes = useStyles();
     const [inputValue, setInputValue] = React.useState('');
-    const [value, setValue] = React.useState('');
     const [options, setOptions] = React.useState([]);
-    const [fetchedDefault, setFetchedDefault] = React.useState(false);
 
     const handleSearch = (event, value) => {
         setInputValue(event.target.value);
     };
 
     const handleChange = (event, value) => {
-        setValue(value);
         props.onChange({
             target:{
                 name: props.name,
@@ -58,27 +55,7 @@ export default function AirportSelector(props) {
     React.useEffect(
         () => {
             let active = true;
-            if(!fetchedDefault) {
-                setFetchedDefault(true);
-                if(props.value) {
-                    props.startLoading();
-                    const mjau = async() => {
-                        const locations = await locationSearch({id: props.value});
-                        setOptions(locations);
-                        const selectedLocation = locations.filter(
-                            x => x.code === props.value || x.id === props.value
-                        )[0];
-                        handleChange(undefined, selectedLocation);
-                    };
-                    mjau();
-                    props.finishLoading();
-                    return;
-                }
-                else if(!props.required) {
-                    handleChange(undefined, {name:"Anywhere", code: ""});
-                }
-            }
-            else if (inputValue === '') {
+            if (inputValue === '') {
                 setOptions([]);
                 return undefined;
             }
@@ -95,7 +72,7 @@ export default function AirportSelector(props) {
                 active = false;
             };
         },
-        [inputValue, ourFetch, fetchedDefault, props.value, props.required]
+        [inputValue]
     );
 
     return (
@@ -105,7 +82,7 @@ export default function AirportSelector(props) {
             filterOptions={x => x}
             options={options}
             onChange={handleChange}
-            value={value}
+            value={props.value}
             renderInput={params => (
                 <TextField
                     required={props.required}

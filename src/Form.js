@@ -28,11 +28,28 @@ class Form extends React.Component {
         };
         this.state.departureDate = moment(this.state.departureDate);
         this.state.returnDate = moment(this.state.returnDate);
+        this.allowSubmit = this.allowSubmit.bind(this);
         this.startLoading = props.startLoading;
         this.finishLoading = props.finishLoading;
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
+        async function fillDefault(whichAirport, state) {
+            if(state[whichAirport]) {
+                const url = `https://kiwiproxy.herokuapp.com/locations/id?id=${state[whichAirport]}`;
+                const locationJson = await fetch(url);
+                const locations = await locationJson.json();
+                state[whichAirport] = locations.locations.filter(
+                    x => x.code === state[whichAirport]
+                )[0];
+            }
+        }
+        async function fillDefaults(state, allowSubmit, doStuff) {
+            await fillDefault('myAirport', state);
+            await fillDefault('herAirport', state);
+            if (allowSubmit()) doStuff();
+        }
+        fillDefaults(this.state, this.allowSubmit, this.doStuff);
     }
 
     handleChange = function(e) {
