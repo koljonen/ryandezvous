@@ -7,12 +7,10 @@ import ResultsTable from './ResultsTable.js';
 // for tabulator
 window.moment = moment;
 moment.updateLocale('en', {
-  week: {
-    dow: 1,
-  },
-})
-
-const candidates = [];
+    week: {
+      dow: 1,
+    },
+});
 
 function App(props) {
     const [loading, setLoading] = React.useState(0);

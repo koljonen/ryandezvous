@@ -72,7 +72,7 @@ export default function AirportSelector(props) {
                 active = false;
             };
         },
-        [inputValue]
+        [inputValue, ourFetch]
     );
 
     return (
