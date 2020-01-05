@@ -85,7 +85,7 @@ class Form extends React.Component {
             `${this.state.returnDate.format('YYYY-MM-DD')}/` +
             (this.state.destinationAirport && this.state.destinationAirport.id ? `${this.state.destinationAirport.id}` : '')
         );
-        for await (const fares of await getFares(this.state)) this.props.addCandidates(fares.candidates);
+        for await (const fares of await getFares(this.state)) this.props.addCandidates(fares);
         this.finishLoading();
     }
 

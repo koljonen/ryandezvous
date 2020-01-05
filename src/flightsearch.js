@@ -87,11 +87,7 @@ async function* getFares(state) {
             )
         }
     );
-    yield {
-        candidates: candidates,
-        myFares: myFaresDict,
-        herFares: herFaresDict
-    };
+    yield candidates;
 }
 
 export default getFares;
