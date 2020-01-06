@@ -1,3 +1,4 @@
+import throttle from 'lodash/throttle';
 import buildUrl from 'build-url';
 import moment from "moment";
 
@@ -5,27 +6,31 @@ function formatKiwiDate(date) {
     return moment(date).format('DD/MM/YYYY');
 }
 
-async function getFaresFromAirport(airport, state) {
-    const fareURL = buildUrl(
-        'https://kiwiproxy.herokuapp.com',
-        {
-            path: "v2/search",
-            queryParams: {
-                fly_from: airport.id,
-                dateFrom: formatKiwiDate(state.departureDate),
-                dateTo: formatKiwiDate(state.departureDate),
-                returnFrom: formatKiwiDate(state.returnDate),
-                returnTo: formatKiwiDate(state.returnDate),
-                curr: 'EUR',
-                ret_from_diff_airport: 0,
-                fly_to: state.destinationAirport ? state.destinationAirport.id : undefined,
-                max_stopovers: 0
+const getFaresFromAirport = throttle(
+    async function (airport, state) {
+        const fareURL = buildUrl(
+            'https://kiwiproxy.herokuapp.com',
+            {
+                path: "v2/search",
+                queryParams: {
+                    fly_from: airport.id,
+                    dateFrom: formatKiwiDate(state.departureDate),
+                    dateTo: formatKiwiDate(state.departureDate),
+                    returnFrom: formatKiwiDate(state.returnDate),
+                    returnTo: formatKiwiDate(state.returnDate),
+                    curr: 'EUR',
+                    ret_from_diff_airport: 0,
+                    fly_to: state.destinationAirport ? state.destinationAirport.id : undefined,
+                    max_stopovers: 0
+                }
             }
-        }
-    ).replace(/%2F/g, '/');
-    const flights = (await (await fetch(fareURL)).json()).data;
-    return flights;
-}
+        ).replace(/%2F/g, '/');
+        const flights = (await (await fetch(fareURL)).json()).data;
+        return flights;
+    },
+    200
+);
+
 
 function arrayToDict(flights, map = {}) {
     flights.forEach(
@@ -40,7 +45,7 @@ function arrayToDict(flights, map = {}) {
 }
 
 function getKey(flight) {
-    return flight.cityTo;
+    return flight.cityCodeTo;
 }
 
 function maybeAdd(myFare, herFare, candidates) {
@@ -91,13 +96,15 @@ function getCandidates({myFaresArray, herFaresDict, revertParams = false}) {
 }
 
 async function* getFares(state) {
-    
     const myFares = await getFaresFromAirport(state.myAirport, state);
     const herFares = await getFaresFromAirport(state.herAirport, state);
     const myFaresDict = arrayToDict(myFares);
     const herFaresDict = arrayToDict(herFares);
-    
     yield getCandidates({myFaresArray: myFares, herFaresDict:herFaresDict});
+    for(const destination of Object.keys(herFaresDict)) {
+        if(destination in myFaresDict) continue;
+        
+    }
 }
 
 export default getFares;
