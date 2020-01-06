@@ -103,7 +103,23 @@ async function* getFares(state) {
     yield getCandidates({myFaresArray: myFares, herFaresDict:herFaresDict});
     for(const destination of Object.keys(herFaresDict)) {
         if(destination in myFaresDict) continue;
-        
+        const myFaresToDestination = await getFaresFromAirport(
+            state.myAirport,
+            {...state, destinationAirport: {id: destination}}
+        );
+        const newCandidates = getCandidates({myFaresArray: myFaresToDestination, herFaresDict: herFaresDict});
+        yield newCandidates;
+        // todo: add to dict
+    }
+    for(const destination of Object.keys(myFaresDict)) {
+        if(destination in herFaresDict) continue;
+        const herFaresToDestination = await getFaresFromAirport(
+            state.herAirport,
+            {...state, destinationAirport: {id: destination}}
+        );
+        const newCandidates = getCandidates({myFaresArray: herFaresToDestination, herFaresDict: myFaresDict, revertParams: true});
+        yield newCandidates;
+        // todo: add to dict
     }
 }
 
