@@ -48,6 +48,7 @@ class Form extends React.Component {
         async function fillDefaults(state, allowSubmit, doStuff) {
             await fillDefault('myAirport', state);
             await fillDefault('herAirport', state);
+            await fillDefault('destinationAirport', state);
             if (allowSubmit()) doStuff();
         }
         fillDefaults(this.state, this.allowSubmit, this.doStuff);
