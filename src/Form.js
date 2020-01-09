@@ -17,6 +17,17 @@ function nextThursday() {
 
 const requiredParams = ['departureDate', 'returnDate', 'myAirport', 'herAirport'];
 
+async function fillDefault(whichAirport, state) {
+    if(state[whichAirport]) {
+        const url = `https://kiwiproxy.herokuapp.com/locations/id?id=${state[whichAirport]}`;
+        const locationJson = await fetch(url);
+        const locations = await locationJson.json();
+        state[whichAirport] = locations.locations.filter(
+            x => x.code === state[whichAirport]
+        )[0];
+    }
+}
+
 class Form extends React.Component {
     constructor(props) {
         super(props);
@@ -34,17 +45,8 @@ class Form extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.setDepartureDate = this.setDepartureDate.bind(this);
-        async function fillDefault(whichAirport, state) {
-            if(state[whichAirport]) {
-                const url = `https://kiwiproxy.herokuapp.com/locations/id?id=${state[whichAirport]}`;
-                const locationJson = await fetch(url);
-                const locations = await locationJson.json();
-                state[whichAirport] = locations.locations.filter(
-                    x => x.code === state[whichAirport]
-                )[0];
-            }
-        }
         async function fillDefaults(state, allowSubmit, doStuff) {
             await fillDefault('myAirport', state);
             await fillDefault('herAirport', state);
@@ -54,6 +56,27 @@ class Form extends React.Component {
         fillDefaults(this.state, this.allowSubmit, this.doStuff);
     }
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const setState = this.setState.bind(this)
+        const oldMatch = prevProps.match.params;
+        const newMatch = this.props.match.params;
+        if(newMatch.returnDate !== oldMatch.returnDate) {
+            this.setState({returnDate: moment(newMatch.returnDate)});
+        }
+        if(newMatch.departureDate !== oldMatch.departureDate) this.setDepartureDate(newMatch.departureDate);
+        async function setAirport(which)  {
+            if(newMatch[which] !== oldMatch[which]) {
+                const newState = {};
+                newState[which] = newMatch[which];
+                await fillDefault(which, newState);
+                setState(newState);
+            }
+        }
+        setAirport('myAirport');
+        setAirport('herAirport');
+        setAirport('destinationAirport');
+    }
+    
     handleChange = function(e) {
         this.setState({ [e.target.name]: e.target.value });
     }
