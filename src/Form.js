@@ -71,7 +71,9 @@ class Form extends React.Component {
 
     setDepartureDate(newDate) {
         if(newDate > this.state.returnDate) {
-            this.setState({returnDate: this.state.returnDate + (newDate - this.state.departureDate)});
+            this.setState({
+                returnDate: moment(this.state.returnDate + (newDate - this.state.departureDate))
+            });
         }
         this.setState({departureDate: newDate});
     }
