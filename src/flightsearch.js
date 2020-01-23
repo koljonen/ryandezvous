@@ -31,7 +31,7 @@ const getFaresFromAirport = throttle(
                     returnTo: formatKiwiDate(returnTo),
                     curr: 'EUR',
                     ret_from_diff_airport: 0,
-                    fly_to: state.destinationAirport ? state.destinationAirport.id : undefined,
+                    fly_to: state.destination ? state.destination.id : undefined,
                     max_stopovers: 0
                 }
             }
@@ -107,16 +107,16 @@ function getCandidates({myFaresArray, herFaresDict, revertParams = false}) {
 }
 
 async function* getFares(state) {
-    const myFares = await getFaresFromAirport(state.myAirport, state);
-    const herFares = await getFaresFromAirport(state.herAirport, state);
+    const myFares = await getFaresFromAirport(state.yourOrigin, state);
+    const herFares = await getFaresFromAirport(state.theirOrigin, state);
     const myFaresDict = arrayToDict(myFares);
     const herFaresDict = arrayToDict(herFares);
     yield getCandidates({myFaresArray: myFares, herFaresDict:herFaresDict});
     for(const destination of Object.keys(herFaresDict)) {
         if(destination in myFaresDict) continue;
         const myFaresToDestination = await getFaresFromAirport(
-            state.myAirport,
-            {...state, destinationAirport: {id: destination}}
+            state.yourOrigin,
+            {...state, destination: {id: destination}}
         );
         const newCandidates = getCandidates({myFaresArray: myFaresToDestination, herFaresDict: herFaresDict});
         yield newCandidates;
@@ -125,8 +125,8 @@ async function* getFares(state) {
     for(const destination of Object.keys(myFaresDict)) {
         if(destination in herFaresDict) continue;
         const herFaresToDestination = await getFaresFromAirport(
-            state.herAirport,
-            {...state, destinationAirport: {id: destination}}
+            state.theirOrigin,
+            {...state, destination: {id: destination}}
         );
         const newCandidates = getCandidates({myFaresArray: herFaresToDestination, herFaresDict: myFaresDict, revertParams: true});
         yield newCandidates;

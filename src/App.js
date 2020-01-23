@@ -20,9 +20,9 @@ moment.updateLocale('en', {
 
 function App(props) {
     const [query, setQuery] = useQueryParams({
-        destinationAirport: StringParam,
-        herAirport: StringParam,
-        myAirport: StringParam,
+        destination: StringParam,
+        theirOrigin: StringParam,
+        yourOrigin: StringParam,
         departureDate: DateParam,
         returnDate: DateParam,
         dateFlexibility: NumberParam,

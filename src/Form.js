@@ -15,7 +15,7 @@ function nextThursday() {
     return moment().add((moment().isoWeekday() >= 4  ? 12 : 4) - moment().isoWeekday(), 'days');
 }
 
-const requiredParams = ['departureDate', 'returnDate', 'myAirport', 'herAirport'];
+const requiredParams = ['departureDate', 'returnDate', 'yourOrigin', 'theirOrigin'];
 
 async function fillDefault(whichAirport, state) {
     if(state[whichAirport]) {
@@ -34,7 +34,7 @@ class Form extends React.Component {
         this.state = {
             departureDate: nextThursday(),
             returnDate: nextThursday().add(4, 'days'),
-            destinationAirport: "",
+            destination: "",
             ...props.query
         };
         
@@ -49,9 +49,9 @@ class Form extends React.Component {
         //this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.setDepartureDate = this.setDepartureDate.bind(this);
         async function fillDefaults(state, allowSubmit, doStuff) {
-            await fillDefault('myAirport', state);
-            await fillDefault('herAirport', state);
-            await fillDefault('destinationAirport', state);
+            await fillDefault('yourOrigin', state);
+            await fillDefault('theirOrigin', state);
+            await fillDefault('destination', state);
             if (allowSubmit()) doStuff();
         }
         fillDefaults(this.state, this.allowSubmit, this.doStuff);
@@ -76,9 +76,9 @@ class Form extends React.Component {
                 setState(newState);
             }
         }
-        setAirport('myAirport');
-        setAirport('herAirport');
-        setAirport('destinationAirport');
+        setAirport('yourOrigin');
+        setAirport('theirOrigin');
+        setAirport('destination');
     }
     
     handleChange = function(e) {
@@ -109,9 +109,9 @@ class Form extends React.Component {
         this.startLoading();
         this.props.clearCandidates();
         this.props.setQuery({
-            myAirport: this.state.myAirport.id,
-            herAirport: this.state.herAirport.id,
-            destinationAirport: this.state.destinationAirport ? this.state.destinationAirport.id : undefined,
+            yourOrigin: this.state.yourOrigin.id,
+            theirOrigin: this.state.theirOrigin.id,
+            destination: this.state.destination ? this.state.destination.id : undefined,
             departureDate: this.state.departureDate.toDate(),
             returnDate: this.state.returnDate.toDate()
         });
@@ -156,9 +156,9 @@ class Form extends React.Component {
                             startLoading={this.startLoading}
                             finishLoading={this.finishLoading}
                             required
-                            id="myAirport"
-                            name="myAirport"
-                            value={this.state.myAirport}
+                            id="yourOrigin"
+                            name="yourOrigin"
+                            value={this.state.yourOrigin}
                             onChange={this.handleChange}
                             label="Your origin"
                             renderInput={this.renderInput}
@@ -169,9 +169,9 @@ class Form extends React.Component {
                             startLoading={this.startLoading}
                             finishLoading={this.finishLoading}
                             required
-                            id="herAirport"
-                            name="herAirport"
-                            value={this.state.herAirport}
+                            id="theirOrigin"
+                            name="theirOrigin"
+                            value={this.state.theirOrigin}
                             onChange={this.handleChange}
                             label="Their origin"
                             renderInput={this.renderInput}
@@ -181,9 +181,9 @@ class Form extends React.Component {
                         <AirportSelector
                             startLoading={this.startLoading}
                             finishLoading={this.finishLoading}
-                            id="destinationAirport"
-                            name="destinationAirport"
-                            value={this.state.destinationAirport}
+                            id="destination"
+                            name="destination"
+                            value={this.state.destination}
                             onChange={this.handleChange}
                             label="Destination"
                             renderInput={this.renderInput}
