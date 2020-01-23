@@ -98,7 +98,7 @@ class Form extends React.Component {
                 returnDate: moment(this.state.returnDate + (newDate - this.state.departureDate))
             });
         }
-        this.setState({departureDate: newDate});
+        this.setState({departureDate: moment(newDate)});
     }
 
     async doStuff() {
