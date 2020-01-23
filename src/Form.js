@@ -23,7 +23,7 @@ async function fillDefault(whichAirport, state) {
         const locationJson = await fetch(url);
         const locations = await locationJson.json();
         state[whichAirport] = locations.locations.filter(
-            x => x.code === state[whichAirport]
+            x => x.id === state[whichAirport]
         )[0];
     }
 }
