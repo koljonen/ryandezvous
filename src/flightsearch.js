@@ -32,7 +32,7 @@ const getFaresFromAirport = throttle(
                     curr: 'EUR',
                     ret_from_diff_airport: 0,
                     fly_to: state.destination ? state.destination.id : undefined,
-                    max_stopovers: 0
+                    max_stopovers: state.max_stopovers || 0
                 }
             }
         ).replace(/%2F/g, '/');

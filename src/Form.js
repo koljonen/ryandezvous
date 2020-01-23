@@ -67,6 +67,10 @@ class Form extends React.Component {
         if(newMatch.dateFlexibility !== oldMatch.dateFlexibility) {
             this.setState({dateFlexibility: newMatch.dateFlexibility});
         }
+        
+        if(newMatch.max_stopovers !== oldMatch.max_stopovers) {
+            this.setState({max_stopovers: newMatch.max_stopovers});
+        }
         if(newMatch.departureDate !== oldMatch.departureDate) this.setDepartureDate(newMatch.departureDate);
         async function setAirport(which)  {
             if(newMatch[which] !== oldMatch[which]) {

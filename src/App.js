@@ -26,6 +26,7 @@ function App(props) {
         departureDate: DateParam,
         returnDate: DateParam,
         dateFlexibility: NumberParam,
+        max_stopovers: NumberParam,
     });
     const [loading, setLoading] = React.useState(0);
     const [candidates, setCandidates] = React.useState([]);
