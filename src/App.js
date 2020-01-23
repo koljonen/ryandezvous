@@ -6,7 +6,8 @@ import ResultsTable from './ResultsTable.js';
 import {
   useQueryParams,
   StringParam,
-  DateParam
+  DateParam,
+  NumberParam,
 } from 'use-query-params';
 
 // for tabulator
@@ -24,6 +25,7 @@ function App(props) {
         myAirport: StringParam,
         departureDate: DateParam,
         returnDate: DateParam,
+        dateFlexibility: NumberParam,
     });
     const [loading, setLoading] = React.useState(0);
     const [candidates, setCandidates] = React.useState([]);

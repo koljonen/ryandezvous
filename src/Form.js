@@ -64,6 +64,9 @@ class Form extends React.Component {
         if(newMatch.returnDate !== oldMatch.returnDate) {
             this.setState({returnDate: moment(newMatch.returnDate)});
         }
+        if(newMatch.dateFlexibility !== oldMatch.dateFlexibility) {
+            this.setState({dateFlexibility: newMatch.dateFlexibility});
+        }
         if(newMatch.departureDate !== oldMatch.departureDate) this.setDepartureDate(newMatch.departureDate);
         async function setAirport(which)  {
             if(newMatch[which] !== oldMatch[which]) {
@@ -108,7 +111,7 @@ class Form extends React.Component {
         this.props.setQuery({
             myAirport: this.state.myAirport.id,
             herAirport: this.state.herAirport.id,
-            destinationAirport: this.state.destinationAirport.id,
+            destinationAirport: this.state.destinationAirport ? this.state.destinationAirport.id : undefined,
             departureDate: this.state.departureDate.toDate(),
             returnDate: this.state.returnDate.toDate()
         });

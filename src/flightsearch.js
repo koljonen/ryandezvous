@@ -6,18 +6,29 @@ function formatKiwiDate(date) {
     return moment(date).format('DD/MM/YYYY');
 }
 
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
 const getFaresFromAirport = throttle(
     async function (airport, state) {
+        const dateFlexibility = state.dateFlexibility || 0;
+        const dateFrom = addDays(state.departureDate, -dateFlexibility);
+        const dateTo = addDays(state.departureDate, dateFlexibility);
+        const returnFrom = addDays(state.returnDate, -dateFlexibility);
+        const returnTo = addDays(state.returnDate, dateFlexibility);
         const fareURL = buildUrl(
             'https://kiwiproxy.herokuapp.com',
             {
                 path: "v2/search",
                 queryParams: {
                     fly_from: airport.id,
-                    dateFrom: formatKiwiDate(state.departureDate),
-                    dateTo: formatKiwiDate(state.departureDate),
-                    returnFrom: formatKiwiDate(state.returnDate),
-                    returnTo: formatKiwiDate(state.returnDate),
+                    dateFrom: formatKiwiDate(dateFrom),
+                    dateTo: formatKiwiDate(dateTo),
+                    returnFrom: formatKiwiDate(returnFrom),
+                    returnTo: formatKiwiDate(returnTo),
                     curr: 'EUR',
                     ret_from_diff_airport: 0,
                     fly_to: state.destinationAirport ? state.destinationAirport.id : undefined,
