@@ -1,4 +1,3 @@
-import { withRouter } from 'react-router-dom';
 import getFares from './flightsearch.js';
 import Grid from '@material-ui/core/Grid';
 import {
@@ -10,6 +9,7 @@ import moment from "moment";
 import Button from '@material-ui/core/Button';
 import React from 'react';
 import AirportSelector from './AirportSelector.js';
+
 
 function nextThursday() {
     return moment().add((moment().isoWeekday() >= 4  ? 12 : 4) - moment().isoWeekday(), 'days');
@@ -35,8 +35,9 @@ class Form extends React.Component {
             departureDate: nextThursday(),
             returnDate: nextThursday().add(4, 'days'),
             destinationAirport: "",
-            ...props.match.params
+            ...props.query
         };
+        
         this.state.departureDate = moment(this.state.departureDate);
         this.state.returnDate = moment(this.state.returnDate);
         this.allowSubmit = this.allowSubmit.bind(this);
@@ -45,7 +46,7 @@ class Form extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
-        this.componentDidUpdate = this.componentDidUpdate.bind(this);
+        //this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.setDepartureDate = this.setDepartureDate.bind(this);
         async function fillDefaults(state, allowSubmit, doStuff) {
             await fillDefault('myAirport', state);
@@ -58,8 +59,8 @@ class Form extends React.Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const setState = this.setState.bind(this)
-        const oldMatch = prevProps.match.params;
-        const newMatch = this.props.match.params;
+        const oldMatch = prevProps.query;
+        const newMatch = this.props.query;
         if(newMatch.returnDate !== oldMatch.returnDate) {
             this.setState({returnDate: moment(newMatch.returnDate)});
         }
@@ -104,13 +105,13 @@ class Form extends React.Component {
     async doStuff() {
         this.startLoading();
         this.props.clearCandidates();
-        this.props.history.push(
-            `/${this.state.myAirport.id}/` +
-            `${this.state.herAirport.id}/` +
-            `${this.state.departureDate.format('YYYY-MM-DD')}/` +
-            `${this.state.returnDate.format('YYYY-MM-DD')}/` +
-            (this.state.destinationAirport && this.state.destinationAirport.id ? `${this.state.destinationAirport.id}` : '')
-        );
+        this.props.setQuery({
+            myAirport: this.state.myAirport.id,
+            herAirport: this.state.herAirport.id,
+            destinationAirport: this.state.destinationAirport.id,
+            departureDate: this.state.departureDate.toDate(),
+            returnDate: this.state.returnDate.toDate()
+        });
         for await (const fares of await getFares(this.state)) this.props.addCandidates(fares);
         this.finishLoading();
     }
@@ -195,4 +196,4 @@ class Form extends React.Component {
     }
 }
 
-export default withRouter(Form)
+export default Form

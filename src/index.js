@@ -1,19 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom'
 import './index.css'
-import { Switch, Route, HashRouter as Router } from 'react-router-dom'
+import { Route, HashRouter as Router } from 'react-router-dom'
+import { QueryParamProvider } from 'use-query-params';
 import App from './App'
 
 const routing = (
-  <Router>
-    <div>
-        <Switch>
-            <Route exact path="/:myAirport/:herAirport/:departureDate/:returnDate" component={App} />
-            <Route exact path="/:myAirport/:herAirport/:departureDate/:returnDate/:destinationAirport" component={App} />
-            <Route exact path="/" component={App} />
-        </Switch>
-    </div>
-  </Router>
+<Router>
+    <QueryParamProvider ReactRouterRoute={Route}>
+        <App />
+    </QueryParamProvider>
+</Router>
 )
 
 ReactDOM.render(routing, document.getElementById('root'))
