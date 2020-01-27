@@ -29,6 +29,8 @@ function App(props) {
         dateFlexibility: NumberParam,
         max_stopovers: NumberParam,
         expand: StringParam,
+        yourFlight: StringParam,
+        theirFlight: StringParam,
     });
     const [loading, setLoading] = React.useState(0);
     const [candidates, setCandidates] = React.useState({});

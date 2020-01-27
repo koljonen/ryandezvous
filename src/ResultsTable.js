@@ -5,18 +5,18 @@ import Grid from '@material-ui/core/Grid';
 import {Tabs, Tab, Paper} from '@material-ui/core';
 
 export default function ResultsTable(props) {
-    const handleChange = (event, newValue) => {
+    const setDestination = (event, newValue) => {
         props.setQuery({expand: newValue});
     };
     const airports = Object.keys(props.candidates);
     const value = airports.indexOf(props.query.expand) !== -1 ? props.query.expand : false;
     return (
         <Paper>
-            <Tabs value={value} onChange={handleChange}>
+            <Tabs value={value} onChange={setDestination}>
                 {Object.values(props.candidates).map(
                     candidate => {
-                        const myFirst = candidate.myFares[0];
-                        const price = minPrice(candidate.myFares) + minPrice(candidate.herFares);
+                        const myFirst = candidate.yourFares[0];
+                        const price = minPrice(candidate.yourFares) + minPrice(candidate.theirFares);
                         const label = `€ ${price} ${myFirst.cityTo}, ${myFirst.countryTo.name}`;
                         return <Tab value={myFirst.cityCodeTo} label={label}/>;
                     }
@@ -42,11 +42,11 @@ function fareToDatum({fare, selection}) {
     const back = `${returnLeg.flyFrom} -> ${returnLeg.flyTo} ${formatTime(returnLeg.local_departure)} – ${formatTime(returnLeg.local_arrival)}`;
     const label = `€ ${fare.price} | ${there} | ${back}`;
     const colors = {
-        hers: ['#DC3912', '#FFAAAA'],
-        mine: ['#3366CC', '#88AAFF']
-    }[fare.mineOrHers];
-    const color1 = fare.id === selection.id ? colors[1] : colors[0];
-    const color2 = fare.id === selection.id ? colors[0] : colors[1];
+        theirs: ['#DC3912', '#FFAAAA'],
+        yours: ['#3366CC', '#88AAFF']
+    }[fare.yoursOrTheirs];
+    const color1 = fare.id === selection ? colors[1] : colors[0];
+    const color2 = fare.id === selection ? colors[0] : colors[1];
     return [
         [
             label,
@@ -74,9 +74,9 @@ function fareToDatum({fare, selection}) {
     ];
 }
 
-function addMineOrHers(fares, mineOrHers) {
+function addYoursOrTheirs(fares, yoursOrTheirs) {
     return fares.map(x => {
-        return {...x, ...{mineOrHers: mineOrHers}}
+        return {...x, ...{yoursOrTheirs: yoursOrTheirs}}
     });
 }
 
@@ -85,8 +85,8 @@ function Expanded({cityCodeTo, candidates}) {
     if(cityCodeTo in candidates);
     else return null;
     const fares = [
-        ...addMineOrHers(candidates[cityCodeTo].myFares, 'mine'),
-        ...addMineOrHers(candidates[cityCodeTo].herFares, 'hers'),
+        ...addYoursOrTheirs(candidates[cityCodeTo].yourFares, 'yours'),
+        ...addYoursOrTheirs(candidates[cityCodeTo].theirFares, 'theirs'),
     ];
     fares.sort((x, y) => Math.sign(x.price - y.price));
 

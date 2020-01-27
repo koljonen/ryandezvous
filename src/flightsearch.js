@@ -59,75 +59,75 @@ function getKey(flight) {
     return flight.cityCodeTo;
 }
 
-function maybeAdd(myFare, herFare, candidates) {
+function maybeAdd(yourFare, theirFare, candidates) {
     const maxDiffHours = 36;
-    const myArrival = new Date(myFare.route[0].local_arrival);
-    const herArrival = new Date(herFare.route[0].local_arrival);
-    const myReturn = new Date(myFare.route[myFare.route.length - 1].local_arrival);
-    const herReturn = new Date(herFare.route[herFare.route.length - 1].local_arrival);
-    const arrivalDiff = Math.abs(myArrival - herArrival);
-    const returnDiff = Math.abs(myReturn - herReturn);
-    const msTogether = Math.min(myReturn, herReturn) - Math.max(myArrival, herArrival);
+    const yourArrival = new Date(yourFare.route[0].local_arrival);
+    const herArrival = new Date(theirFare.route[0].local_arrival);
+    const yourReturn = new Date(yourFare.route[yourFare.route.length - 1].local_arrival);
+    const herReturn = new Date(theirFare.route[theirFare.route.length - 1].local_arrival);
+    const arrivalDiff = Math.abs(yourArrival - herArrival);
+    const returnDiff = Math.abs(yourReturn - herReturn);
+    const msTogether = Math.min(yourReturn, herReturn) - Math.max(yourArrival, herArrival);
     const msApart = arrivalDiff + returnDiff;
     if(arrivalDiff + returnDiff > maxDiffHours * 60 * 60 * 1000) return;
-    if(myFare.cityCodeTo !== herFare.cityCodeTo) return;
+    if(yourFare.cityCodeTo !== theirFare.cityCodeTo) return;
     if(msTogether < 24 * 60 * 60 * 1000) return;
     if(msTogether <= msApart) return;
     candidates.push({
-        day: myFare.route[0].local_departure,
-        destination: myFare.cityTo + ', ' + myFare.countryTo.name,
-        myArrivalDate: myFare.route[0].local_arrival,
-        herArrivalDate: herFare.route[0].local_arrival,
-        myReturnDate: myFare.route[myFare.route.length - 1].local_arrival,
-        herReturnDate: herFare.route[herFare.route.length - 1].local_arrival,
-        myDepartureDate: myFare.route[0].local_departure,
-        herDepartureDate: herFare.route[0].local_departure,
-        price: myFare.price + herFare.price,
+        day: yourFare.route[0].local_departure,
+        destination: yourFare.cityTo + ', ' + yourFare.countryTo.name,
+        yourArrivalDate: yourFare.route[0].local_arrival,
+        herArrivalDate: theirFare.route[0].local_arrival,
+        yourReturnDate: yourFare.route[yourFare.route.length - 1].local_arrival,
+        herReturnDate: theirFare.route[theirFare.route.length - 1].local_arrival,
+        yourDepartureDate: yourFare.route[0].local_departure,
+        herDepartureDate: theirFare.route[0].local_departure,
+        price: yourFare.price + theirFare.price,
         timeApart: moment.duration(msApart),
         timeTogether: moment.duration(msTogether),
-        myLink: myFare.deep_link,
-        herLink: herFare.deep_link
+        yourLink: yourFare.deep_link,
+        herLink: theirFare.deep_link
     });
 };
 
-function getCandidates({myFares, herFares}) {
+function getCandidates({yourFares, theirFares}) {
     const candidates = {};
-    for(const destination of Object.keys(herFares)) {
-        if(destination in myFares);
+    for(const destination of Object.keys(theirFares)) {
+        if(destination in yourFares);
         else continue;
         candidates[destination] = {
-            myFares: myFares[destination],
-            herFares: herFares[destination]
+            yourFares: yourFares[destination],
+            theirFares: theirFares[destination]
         }
     }
     return candidates;
 }
 
 async function* getFares(state) {
-    const myFares = await getFaresFromAirport(state.yourOrigin, state);
-    const herFares = await getFaresFromAirport(state.theirOrigin, state);
-    const myFaresDict = arrayToDict(myFares);
-    const herFaresDict = arrayToDict(herFares);
-    yield getCandidates({myFares: myFaresDict, herFares:herFaresDict});
-    for(const destination of Object.keys(herFaresDict)) {
-        if(destination in myFaresDict) continue;
-        const myFaresToDestination = await getFaresFromAirport(
+    const yourFares = await getFaresFromAirport(state.yourOrigin, state);
+    const theirFares = await getFaresFromAirport(state.theirOrigin, state);
+    const yourFaresDict = arrayToDict(yourFares);
+    const theirFaresDict = arrayToDict(theirFares);
+    yield getCandidates({yourFares: yourFaresDict, theirFares:theirFaresDict});
+    for(const destination of Object.keys(theirFaresDict)) {
+        if(destination in yourFaresDict) continue;
+        const yourFaresToDestination = await getFaresFromAirport(
             state.yourOrigin,
             {...state, destination: {id: destination}}
         );
-        const myFaresToDestinationDict = arrayToDict(myFaresToDestination);
-        const newCandidates = getCandidates({myFares: myFaresToDestinationDict, herFares: herFaresDict});
+        const yourFaresToDestinationDict = arrayToDict(yourFaresToDestination);
+        const newCandidates = getCandidates({yourFares: yourFaresToDestinationDict, theirFares: theirFaresDict});
         yield newCandidates;
         // todo: add to dict
     }
-    for(const destination of Object.keys(myFaresDict)) {
-        if(destination in herFaresDict) continue;
-        const herFaresToDestination = await getFaresFromAirport(
+    for(const destination of Object.keys(yourFaresDict)) {
+        if(destination in theirFaresDict) continue;
+        const theirFaresToDestination = await getFaresFromAirport(
             state.theirOrigin,
             {...state, destination: {id: destination}}
         );
-        const herFaresToDestinationDict = arrayToDict(herFaresToDestination);
-        const newCandidates = getCandidates({myFares: myFaresDict, herFares: herFaresToDestinationDict});
+        const theirFaresToDestinationDict = arrayToDict(theirFaresToDestination);
+        const newCandidates = getCandidates({yourFares: yourFaresDict, theirFares: theirFaresToDestinationDict});
         yield newCandidates;
         // todo: add to dict
     }
