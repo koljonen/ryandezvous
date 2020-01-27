@@ -42,7 +42,6 @@ const getFaresFromAirport = throttle(
     200
 );
 
-
 function arrayToDict(flights, map = {}) {
     flights.forEach(
         (flight) => {
@@ -58,37 +57,6 @@ function arrayToDict(flights, map = {}) {
 function getKey(flight) {
     return flight.cityCodeTo;
 }
-
-function maybeAdd(yourFare, theirFare, candidates) {
-    const maxDiffHours = 36;
-    const yourArrival = new Date(yourFare.route[0].local_arrival);
-    const herArrival = new Date(theirFare.route[0].local_arrival);
-    const yourReturn = new Date(yourFare.route[yourFare.route.length - 1].local_arrival);
-    const herReturn = new Date(theirFare.route[theirFare.route.length - 1].local_arrival);
-    const arrivalDiff = Math.abs(yourArrival - herArrival);
-    const returnDiff = Math.abs(yourReturn - herReturn);
-    const msTogether = Math.min(yourReturn, herReturn) - Math.max(yourArrival, herArrival);
-    const msApart = arrivalDiff + returnDiff;
-    if(arrivalDiff + returnDiff > maxDiffHours * 60 * 60 * 1000) return;
-    if(yourFare.cityCodeTo !== theirFare.cityCodeTo) return;
-    if(msTogether < 24 * 60 * 60 * 1000) return;
-    if(msTogether <= msApart) return;
-    candidates.push({
-        day: yourFare.route[0].local_departure,
-        destination: yourFare.cityTo + ', ' + yourFare.countryTo.name,
-        yourArrivalDate: yourFare.route[0].local_arrival,
-        herArrivalDate: theirFare.route[0].local_arrival,
-        yourReturnDate: yourFare.route[yourFare.route.length - 1].local_arrival,
-        herReturnDate: theirFare.route[theirFare.route.length - 1].local_arrival,
-        yourDepartureDate: yourFare.route[0].local_departure,
-        herDepartureDate: theirFare.route[0].local_departure,
-        price: yourFare.price + theirFare.price,
-        timeApart: moment.duration(msApart),
-        timeTogether: moment.duration(msTogether),
-        yourLink: yourFare.deep_link,
-        herLink: theirFare.deep_link
-    });
-};
 
 function getCandidates({yourFares, theirFares}) {
     const candidates = {};

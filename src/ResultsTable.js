@@ -1,8 +1,17 @@
 import moment from "moment";
 import { Chart } from "react-google-charts";
 import React from 'react';
-import Grid from '@material-ui/core/Grid';
-import {Tabs, Tab, Paper} from '@material-ui/core';
+import CardHeader from "@material-ui/core/CardHeader";
+import CardActions from '@material-ui/core/CardActions';
+import {
+    Link,
+    Tabs,
+    Tab,
+    Paper,
+    Card,
+    CardContent,
+    Avatar
+} from '@material-ui/core';
 
 export default function ResultsTable(props) {
     const setDestination = (event, newValue) => {
@@ -33,6 +42,11 @@ export default function ResultsTable(props) {
                 setYourFlight={setYourFlight}
                 setTheirFlight={setTheirFlight}
             />
+            <Selected
+                yourFlight={props.query.yourFlight}
+                theirFlight={props.query.theirFlight}
+                flights={props.candidates[props.query.expand]}
+            />
         </Paper>
     )
 }
@@ -45,7 +59,10 @@ function formatTime(time) {
     return moment(time).format('DD MMM HH:mm');
 }
 
-function fareToDatum({fare, selection}) {
+function fareToDatum({fare, yourFlight, theirFlight}) {
+    const selection = yourFlight || theirFlight;
+    if(yourFlight && fare.yoursOrTheirs === 'yours' && fare.id !== yourFlight) return null;
+    if(theirFlight && fare.yoursOrTheirs === 'theirs' && fare.id !== theirFlight) return null;
     const returnLeg = fare.route[fare.route.length - 1];
     const price = `€ ${fare.price}`
     const there = `${fare.flyFrom} -> ${fare.flyTo} ${formatTime(fare.local_departure)} – ${formatTime(fare.local_arrival)}`;
@@ -101,7 +118,11 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
         ...addYoursOrTheirs(candidates[cityCodeTo].yourFares, 'yours'),
         ...addYoursOrTheirs(candidates[cityCodeTo].theirFares, 'theirs'),
     ];
-    fares.sort((x, y) => Math.sign(x.price - y.price));
+    fares.sort((x, y) => {
+        if(x.id === theirFlight || x.id === yourFlight) return -1;
+        if(y.id === theirFlight || y.id === yourFlight) return 1;
+        return Math.sign(x.price - y.price);
+    });
 
     const data_param = [
         [
@@ -114,8 +135,8 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
 
         ],
         ...fares.map(
-            fare => fareToDatum({fare:fare, selection: yourFlight || theirFlight})
-        ).flat()
+            fare => fareToDatum({fare:fare, yourFlight: yourFlight, theirFlight: theirFlight})
+        ).filter(x => x).flat()
     ];
     const chartEvents=[
       {
@@ -124,7 +145,7 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
             const chartSelection = chartWrapper.getChart().getSelection();
             const idx = Math.floor(chartSelection[0].row / 3);
             const selectedFare = fares[idx];
-            if(selectedFare.yoursOrTheirs == 'yours') {
+            if(selectedFare.yoursOrTheirs === 'yours') {
                 if(selectedFare.id === yourFlight) setYourFlight('');
                 else setYourFlight(selectedFare.id);
             }
@@ -139,7 +160,7 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
     return (
         <Chart
             width={'100%'}
-            height={'800px'}
+            height={yourFlight && theirFlight ? '200px' : '800px'}
             chartType="Timeline"
             loader={<div>Loading Chart</div>}
             data={data_param}
@@ -160,8 +181,34 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
     );
 }
 
-function Fare(fare) {
-    return (<Grid item sm={6} md={3} xl={2}>
-        <div>{JSON.stringify(fare)}</div>
-    </Grid>);
+function Selected({yourFlight, theirFlight, flights}) {
+    if(!flights) return null;
+    const theirs = flights.theirFares.filter(c => c.id === theirFlight)[0];
+    const yours = flights.yourFares.filter(c => c.id === yourFlight)[0];
+    return <Paper>
+        <Flight flight={theirs}/>
+        <Flight flight={yours}/>
+    </Paper>
+}
+
+function Flight({flight}) {
+    return <Card key={flight.id}>
+        <CardHeader title={`${flight.cityFrom} -> ${flight.cityTo}`}/>
+        {flight.route.map(
+            leg => {
+                console.log(leg);
+                return <div>
+                    <Avatar src={`https://images.kiwi.com/airlines/64/${leg.airline}.png`}/>
+                    <CardContent>
+                        {formatTime(leg.local_departure)} {leg.cityFrom} ({leg.flyFrom})
+                        <br/>
+                        {formatTime(leg.local_arrival)} {leg.cityTo} ({leg.flyTo})
+                    </CardContent>
+                </div>
+            }
+        )}
+        <CardActions>
+            <Link target="_blank" rel="noopener" href={flight.deep_link}>€ {flight.price}</Link>
+        </CardActions>
+    </Card>
 }
