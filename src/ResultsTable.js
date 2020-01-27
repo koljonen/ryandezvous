@@ -38,9 +38,11 @@ function formatTime(time) {
 
 function fareToDatum({fare, selection}) {
     const returnLeg = fare.route[fare.route.length - 1];
+    const price = `€ ${fare.price}`
     const there = `${fare.flyFrom} -> ${fare.flyTo} ${formatTime(fare.local_departure)} – ${formatTime(fare.local_arrival)}`;
     const back = `${returnLeg.flyFrom} -> ${returnLeg.flyTo} ${formatTime(returnLeg.local_departure)} – ${formatTime(returnLeg.local_arrival)}`;
-    const label = `€ ${fare.price} | ${there} | ${back}`;
+    const label = `${price} | ${there} | ${back}`;
+    const tooltip = `${price}<br/>${there}<br/>${back}`;
     const colors = {
         theirs: ['#DC3912', '#FFAAAA'],
         yours: ['#3366CC', '#88AAFF']
@@ -51,7 +53,8 @@ function fareToDatum({fare, selection}) {
         [
             label,
             '',
-            `color: ${color1}; font-weight:bold`,
+            `color: ${color1};`,
+            tooltip,
             new Date(fare.utc_departure),
             new Date(fare.utc_arrival),
 
@@ -59,7 +62,8 @@ function fareToDatum({fare, selection}) {
         [
             label,
             label,
-            `color: ${color2}; font-weight:bold`,
+            `color: ${color2};`,
+            tooltip,
             new Date(fare.utc_arrival),
             new Date(returnLeg.utc_departure),
 
@@ -67,7 +71,8 @@ function fareToDatum({fare, selection}) {
         [
             label,
             '',
-            `color: ${color1}; font-weight:bold`,
+            `color: ${color1};`,
+            tooltip,
             new Date(returnLeg.utc_departure),
             new Date(returnLeg.utc_arrival),
         ]
@@ -131,6 +136,10 @@ function Expanded({cityCodeTo, candidates}) {
                     groupByRowLabel: true,
                     showRowLabels: false
                 },
+                tooltip: {
+                    isHtml: true
+                }
+
             }}
             rootProps={{ 'data-testid': '1' }}
         />
