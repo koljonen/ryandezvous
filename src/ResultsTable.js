@@ -196,7 +196,6 @@ function Flight({flight}) {
         <CardHeader title={`${flight.cityFrom} -> ${flight.cityTo}`}/>
         {flight.route.map(
             leg => {
-                console.log(leg);
                 return <div>
                     <Avatar src={`https://images.kiwi.com/airlines/64/${leg.airline}.png`}/>
                     <CardContent>
