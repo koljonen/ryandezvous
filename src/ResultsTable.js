@@ -1,128 +1,157 @@
 import moment from "moment";
+import { Chart } from "react-google-charts";
 import React from 'react';
-import 'react-tabulator/lib/styles.css';
-import 'react-tabulator/lib/css/tabulator.min.css';
-import { ReactTabulator } from 'react-tabulator';
+import Grid from '@material-ui/core/Grid';
+import {Tabs, Tab, Paper} from '@material-ui/core';
 
 export default function ResultsTable(props) {
-    const columns = [
-        {
-            title: "Price",
-            field: "price",
-            formatter: "money",
-            formatterParams: {
-                symbol: "€",
-                precision: 0
-            },
-            headerFilter: true,
-            headerFilterFunc: (headerValue, rowValue) => headerValue >= rowValue,
-        },
-        {
-            title: "Destination",
-            field: "destination",
-            headerFilter: true
-        },
-        {
-            title: "You",
-            columns: [
-                {
-                    title: "Arrival",
-                    field: "myArrivalDate",
-                    align: "center",
-                    formatter:"datetime",
-                    formatterParams: {
-                        outputFormat:"ddd DD MMM HH:mm"
-                    },
-                },
-                {
-                    title: "Return",
-                    field: "myReturnDate",
-                    align: "center",
-                    formatter:"datetime",
-                    formatterParams: {
-                        outputFormat:"ddd DD MMM HH:mm"
-                    },
-                },
-                {
-                    title: "Link",
-                    field: "myLink",
-                    formatter:"link",
-                    formatterParams: {
-                        label: "Buy",
-                        target: "_blank",
-                    }
-                },
-            ]
-        },
-        {
-            title: "Them",
-            columns: [
-                {
-                    title: "Arrival",
-                    field: "herArrivalDate",
-                    align: "center",
-                    formatter:"datetime",
-                    formatterParams: {
-                        outputFormat:"ddd DD MMM HH:mm"
-                    },
-                },
-                {
-                    title: "Return",
-                    field: "herReturnDate",
-                    align: "center",
-                    formatter:"datetime",
-                    formatterParams: {
-                        outputFormat:"ddd DD MMM HH:mm"
-                    },
-                },
-                {
-                    title: "Link",
-                    field: "herLink",
-                    formatter:"link",
-                    formatterParams: {
-                        label: "Buy",
-                        target: "_blank",
-                    }
-                },
-            ]
-        },
-        {
-            title: "Together",
-            field: "timeTogether",
-            formatter: function(cell, formatterParams, onRendered){
-                return cell.getValue().humanize();
-            },
-            sorter: (a, b) => a.asSeconds() - b.asSeconds(),
-            headerFilter: true,
-            headerFilterFunc: (headerValue, rowValue) => parseDuration(headerValue) <= rowValue,
-        },
-        {
-            title: "Apart",
-            field: "timeApart",
-            formatter: function(cell, formatterParams, onRendered){
-                return cell.getValue().humanize();
-            },
-            sorter: (a, b) => a.asSeconds() - b.asSeconds(),
-            headerFilter: true,
-            headerFilterFunc: (headerValue, rowValue) => parseDuration(headerValue) >= rowValue,
-        },
-    ];
+    const handleChange = (event, newValue) => {
+        props.setQuery({expand: newValue});
+    };
+    const airports = Object.keys(props.candidates);
+    const value = airports.indexOf(props.query.expand) !== -1 ? props.query.expand : false;
     return (
-        <ReactTabulator
-            data={props.candidates}
-            columns={columns}
-            options={{
-                height:"100%",
-                layout:"fitColumns",
-                reactiveData:true,
-            }}
-        />
-  );
+        <Paper>
+            <Tabs value={value} onChange={handleChange}>
+                {Object.values(props.candidates).map(
+                    candidate => {
+                        const myFirst = candidate.myFares[0];
+                        const price = minPrice(candidate.myFares) + minPrice(candidate.herFares);
+                        const label = `€ ${price} ${myFirst.cityTo}, ${myFirst.countryTo.name}`;
+                        return <Tab value={myFirst.cityCodeTo} label={label}/>;
+                    }
+                )
+                }
+            </Tabs>
+            <Expanded cityCodeTo={props.query.expand} candidates={props.candidates}/>
+        </Paper>
+    )
 }
 
-function parseDuration(s) {
-    const parts = s.split(' ');
-    const numberPart = parts[0] === 'a' || parts[0] === 'an' ? 1 : parseInt(parts[0]);
-    const unitPart =  parts[1][parts[1].length -1] === 's' ? parts[1] : parts[1] + 's';
-    return moment.duration(numberPart, unitPart);
+function minPrice(fares) {
+    return Math.min(...(fares.map(fare => fare.price)));
+}
+
+function formatTime(time) {
+    return moment(time).format('DD MMM HH:mm');
+}
+
+function fareToDatum({fare, airportColors, selection}) {
+    const returnLeg = fare.route[fare.route.length - 1];
+    const there = `${fare.flyFrom} -> ${fare.flyTo} ${formatTime(fare.local_departure)} – ${formatTime(fare.local_arrival)}`;
+    const back = `${returnLeg.flyFrom} -> ${returnLeg.flyTo} ${formatTime(returnLeg.local_departure)} – ${formatTime(returnLeg.local_arrival)}`;
+    const label = `€ ${fare.price} | ${there} | ${back}`;
+    const colors = airportColors[fare.flyFrom];
+    const color1 = fare.id === selection.id ? colors[1] : colors[0];
+    const color2 = fare.id === selection.id ? colors[0] : colors[1];
+    return [
+        [
+            label,
+            '',
+            `color: ${color1}; font-weight:bold`,
+            new Date(fare.utc_departure),
+            new Date(fare.utc_arrival),
+
+        ],
+        [
+            label,
+            label,
+            `color: ${color2}; font-weight:bold`,
+            new Date(fare.utc_arrival),
+            new Date(returnLeg.utc_departure),
+
+        ],
+        [
+            label,
+            '',
+            `color: ${color1}; font-weight:bold`,
+            new Date(returnLeg.utc_departure),
+            new Date(returnLeg.utc_arrival),
+        ]
+    ];
+}
+
+function addMineOrHers(fares, mineOrHers) {
+    return fares.map(x => {
+        return {...x, ...{mineOrHers: mineOrHers}}
+    });
+}
+
+function Expanded({cityCodeTo, candidates}) {
+    const [selection, setSelection] = React.useState({});
+    if(cityCodeTo in candidates);
+    else return null;
+    const fares = [
+        ...addMineOrHers(candidates[cityCodeTo].myFares, 'mine'),
+        ...addMineOrHers(candidates[cityCodeTo].herFares, 'her'),
+    ];
+    fares.sort((x, y) => Math.sign(x.price - y.price));
+
+    const airports = [...new Set(fares.map(fare => fare.flyFrom))];
+    airports.sort();
+    const airportColors = airports.reduce(
+        (colors, airport, index) => {
+            const color = [
+                ['#DC3912', '#FFAAAA'],
+                ['#3366CC', '#88AAFF'],
+                ['#FF9900', '#FFEE88'],
+                ['#109618', '#BBFFBB'],
+            ][index];
+            colors[airport] = color;
+            return colors;
+        },
+        {}
+    );
+
+    const data_param = [
+        [
+            { type: 'string', id: 'Room' },
+            { type: 'string', id: 'price' },
+            { type: 'string', role: 'style' },
+            { type: 'date', id: 'Start' },
+            { type: 'date', id: 'End' },
+
+        ],
+        ...fares.map(
+            fare => fareToDatum({fare:fare, airportColors: airportColors, selection: selection})
+        ).flat()
+    ];
+
+    const chartEvents=[
+      {
+        eventName: 'select',
+        callback: function({chartWrapper}) {
+            const chartSelection = chartWrapper.getChart().getSelection();
+            const idx = Math.floor(chartSelection[0].row / 3);
+            const selectedFare = fares[idx];
+            if(selectedFare.id === selection.id) setSelection({});
+            else setSelection(selectedFare);
+        }
+      }
+    ];
+
+    return (
+        <Chart
+            width={'100%'}
+            height={'800px'}
+            chartType="Timeline"
+            loader={<div>Loading Chart</div>}
+            data={data_param}
+            chartEvents={chartEvents} // <- this is event handler
+            options={{
+                timeline: {
+                    colorByRowLabel: false,
+                    groupByRowLabel: true,
+                    showRowLabels: false
+                },
+            }}
+            rootProps={{ 'data-testid': '1' }}
+        />
+    );
+}
+
+function Fare(fare) {
+    return (<Grid item sm={6} md={3} xl={2}>
+        <div>{JSON.stringify(fare)}</div>
+    </Grid>);
 }

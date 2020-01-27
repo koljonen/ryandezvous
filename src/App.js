@@ -1,3 +1,4 @@
+import {Tabs, Tab, Paper} from '@material-ui/core';
 import moment from "moment";
 import React from 'react';
 import './App.css';
@@ -27,12 +28,13 @@ function App(props) {
         returnDate: DateParam,
         dateFlexibility: NumberParam,
         max_stopovers: NumberParam,
+        expand: StringParam,
     });
     const [loading, setLoading] = React.useState(0);
-    const [candidates, setCandidates] = React.useState([]);
+    const [candidates, setCandidates] = React.useState({});
     const startLoading = () => setLoading(loading + 1);
     const finishLoading = () => setLoading(loading - 1);
-    const addCandidates = (newCandidates) => setCandidates([...candidates, ...newCandidates]);
+    const addCandidates = (newCandidates) => setCandidates({...candidates, ...newCandidates});
     const clearCandidates = () => setCandidates([]);
     return (
         <div>
@@ -46,7 +48,7 @@ function App(props) {
                 setQuery={setQuery}
             />
             <Loading id="loading" loading={loading > 0}/>
-            <ResultsTable candidates={candidates}/>
+            <ResultsTable candidates={candidates} setQuery={setQuery} query={query}/>
         </div>
   );
 }

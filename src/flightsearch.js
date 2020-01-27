@@ -90,19 +90,16 @@ function maybeAdd(myFare, herFare, candidates) {
     });
 };
 
-function getCandidates({myFaresArray, herFaresDict, revertParams = false}) {
-    const candidates = [];
-    myFaresArray.forEach(
-        myFare => {
-            const herFaresFromCity = herFaresDict[getKey(myFare)];
-            if(herFaresFromCity) herFaresFromCity.forEach(
-                herFare => {
-                    if(revertParams) maybeAdd(herFare, myFare, candidates)
-                    else maybeAdd(myFare, herFare, candidates)
-                }
-            )
+function getCandidates({myFares, herFares}) {
+    const candidates = {};
+    for(const destination of Object.keys(herFares)) {
+        if(destination in myFares);
+        else continue;
+        candidates[destination] = {
+            myFares: myFares[destination],
+            herFares: herFares[destination]
         }
-    );
+    }
     return candidates;
 }
 
@@ -111,14 +108,15 @@ async function* getFares(state) {
     const herFares = await getFaresFromAirport(state.theirOrigin, state);
     const myFaresDict = arrayToDict(myFares);
     const herFaresDict = arrayToDict(herFares);
-    yield getCandidates({myFaresArray: myFares, herFaresDict:herFaresDict});
+    yield getCandidates({myFares: myFaresDict, herFares:herFaresDict});
     for(const destination of Object.keys(herFaresDict)) {
         if(destination in myFaresDict) continue;
         const myFaresToDestination = await getFaresFromAirport(
             state.yourOrigin,
             {...state, destination: {id: destination}}
         );
-        const newCandidates = getCandidates({myFaresArray: myFaresToDestination, herFaresDict: herFaresDict});
+        const myFaresToDestinationDict = arrayToDict(myFaresToDestination);
+        const newCandidates = getCandidates({myFares: myFaresToDestinationDict, herFares: herFaresDict});
         yield newCandidates;
         // todo: add to dict
     }
@@ -128,7 +126,8 @@ async function* getFares(state) {
             state.theirOrigin,
             {...state, destination: {id: destination}}
         );
-        const newCandidates = getCandidates({myFaresArray: herFaresToDestination, herFaresDict: myFaresDict, revertParams: true});
+        const herFaresToDestinationDict = arrayToDict(herFaresToDestination);
+        const newCandidates = getCandidates({myFares: myFaresDict, herFares: herFaresToDestinationDict});
         yield newCandidates;
         // todo: add to dict
     }
