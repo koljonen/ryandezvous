@@ -15,7 +15,7 @@ import {
 
 export default function ResultsTable(props) {
     const setDestination = (event, newValue) => {
-        props.setQuery({expand: newValue});
+        props.setQuery({expand: newValue, theirFlight: null, yourFlight: null});
     };
     const setYourFlight = (newValue) => props.setQuery({yourFlight: newValue});
     const setTheirFlight = (newValue) => props.setQuery({theirFlight: newValue});
@@ -185,6 +185,7 @@ function Selected({yourFlight, theirFlight, flights}) {
     if(!flights || !yourFlight || !theirFlight) return null;
     const theirs = flights.theirFares.filter(c => c.id === theirFlight)[0];
     const yours = flights.yourFares.filter(c => c.id === yourFlight)[0];
+    if(!theirs || !yours) return null;
     return <Paper>
         <Flight flight={theirs}/>
         <Flight flight={yours}/>
