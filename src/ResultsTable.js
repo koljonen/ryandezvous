@@ -182,7 +182,7 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
 }
 
 function Selected({yourFlight, theirFlight, flights}) {
-    if(!flights) return null;
+    if(!flights || !yourFlight || !theirFlight) return null;
     const theirs = flights.theirFares.filter(c => c.id === theirFlight)[0];
     const yours = flights.yourFares.filter(c => c.id === yourFlight)[0];
     return <Paper>
