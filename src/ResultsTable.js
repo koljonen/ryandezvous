@@ -36,12 +36,15 @@ function formatTime(time) {
     return moment(time).format('DD MMM HH:mm');
 }
 
-function fareToDatum({fare, airportColors, selection}) {
+function fareToDatum({fare, selection}) {
     const returnLeg = fare.route[fare.route.length - 1];
     const there = `${fare.flyFrom} -> ${fare.flyTo} ${formatTime(fare.local_departure)} – ${formatTime(fare.local_arrival)}`;
     const back = `${returnLeg.flyFrom} -> ${returnLeg.flyTo} ${formatTime(returnLeg.local_departure)} – ${formatTime(returnLeg.local_arrival)}`;
     const label = `€ ${fare.price} | ${there} | ${back}`;
-    const colors = airportColors[fare.flyFrom];
+    const colors = {
+        hers: ['#DC3912', '#FFAAAA'],
+        mine: ['#3366CC', '#88AAFF']
+    }[fare.mineOrHers];
     const color1 = fare.id === selection.id ? colors[1] : colors[0];
     const color2 = fare.id === selection.id ? colors[0] : colors[1];
     return [
@@ -83,25 +86,9 @@ function Expanded({cityCodeTo, candidates}) {
     else return null;
     const fares = [
         ...addMineOrHers(candidates[cityCodeTo].myFares, 'mine'),
-        ...addMineOrHers(candidates[cityCodeTo].herFares, 'her'),
+        ...addMineOrHers(candidates[cityCodeTo].herFares, 'hers'),
     ];
     fares.sort((x, y) => Math.sign(x.price - y.price));
-
-    const airports = [...new Set(fares.map(fare => fare.flyFrom))];
-    airports.sort();
-    const airportColors = airports.reduce(
-        (colors, airport, index) => {
-            const color = [
-                ['#DC3912', '#FFAAAA'],
-                ['#3366CC', '#88AAFF'],
-                ['#FF9900', '#FFEE88'],
-                ['#109618', '#BBFFBB'],
-            ][index];
-            colors[airport] = color;
-            return colors;
-        },
-        {}
-    );
 
     const data_param = [
         [
@@ -113,7 +100,7 @@ function Expanded({cityCodeTo, candidates}) {
 
         ],
         ...fares.map(
-            fare => fareToDatum({fare:fare, airportColors: airportColors, selection: selection})
+            fare => fareToDatum({fare:fare, selection: selection})
         ).flat()
     ];
 
