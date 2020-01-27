@@ -8,6 +8,8 @@ export default function ResultsTable(props) {
     const setDestination = (event, newValue) => {
         props.setQuery({expand: newValue});
     };
+    const setYourFlight = (newValue) => props.setQuery({yourFlight: newValue});
+    const setTheirFlight = (newValue) => props.setQuery({theirFlight: newValue});
     const airports = Object.keys(props.candidates);
     const value = airports.indexOf(props.query.expand) !== -1 ? props.query.expand : false;
     return (
@@ -23,7 +25,14 @@ export default function ResultsTable(props) {
                 )
                 }
             </Tabs>
-            <Expanded cityCodeTo={props.query.expand} candidates={props.candidates}/>
+            <Expanded
+                cityCodeTo={props.query.expand}
+                yourFlight={props.query.yourFlight}
+                theirFlight={props.query.theirFlight}
+                candidates={props.candidates}
+                setYourFlight={setYourFlight}
+                setTheirFlight={setTheirFlight}
+            />
         </Paper>
     )
 }
@@ -85,8 +94,7 @@ function addYoursOrTheirs(fares, yoursOrTheirs) {
     });
 }
 
-function Expanded({cityCodeTo, candidates}) {
-    const [selection, setSelection] = React.useState({});
+function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFlight, setTheirFlight}) {
     if(cityCodeTo in candidates);
     else return null;
     const fares = [
@@ -100,15 +108,15 @@ function Expanded({cityCodeTo, candidates}) {
             { type: 'string', id: 'Room' },
             { type: 'string', id: 'price' },
             { type: 'string', role: 'style' },
+            { type: 'string', role: 'tooltip', p: {'html': true}},
             { type: 'date', id: 'Start' },
             { type: 'date', id: 'End' },
 
         ],
         ...fares.map(
-            fare => fareToDatum({fare:fare, selection: selection})
+            fare => fareToDatum({fare:fare, selection: yourFlight || theirFlight})
         ).flat()
     ];
-
     const chartEvents=[
       {
         eventName: 'select',
@@ -116,8 +124,14 @@ function Expanded({cityCodeTo, candidates}) {
             const chartSelection = chartWrapper.getChart().getSelection();
             const idx = Math.floor(chartSelection[0].row / 3);
             const selectedFare = fares[idx];
-            if(selectedFare.id === selection.id) setSelection({});
-            else setSelection(selectedFare);
+            if(selectedFare.yoursOrTheirs == 'yours') {
+                if(selectedFare.id === yourFlight) setYourFlight('');
+                else setYourFlight(selectedFare.id);
+            }
+            else {
+                if(selectedFare.id === theirFlight) setTheirFlight('');
+                else setTheirFlight(selectedFare.id);
+            }
         }
       }
     ];
