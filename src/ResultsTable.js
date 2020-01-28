@@ -30,7 +30,7 @@ export default function ResultsTable(props) {
                         const myFirst = candidate.yourFares[0];
                         const price = minPrice(candidate.yourFares) + minPrice(candidate.theirFares);
                         const label = `€ ${price} ${myFirst.cityTo}, ${myFirst.countryTo.name}`;
-                        return <Tab value={myFirst.cityCodeTo} label={label}/>;
+                        return <Tab key={myFirst.cityCodeTo} value={myFirst.cityCodeTo} label={label}/>;
                     }
                 )
                 }
@@ -198,11 +198,11 @@ function Selected({yourFlight, theirFlight, flights}) {
 
 function Flight({flight}) {
     return <Grid item>
-        <Card key={flight.id}>
+        <Card>
             <CardHeader title={`${flight.cityFrom} -> ${flight.cityTo}`}/>
             {flight.route.map(
                 leg => {
-                    return <div>
+                    return <div key={leg.id}>
                         <Avatar src={`https://images.kiwi.com/airlines/64/${leg.airline}.png`}/>
                         <CardContent>
                             {formatTime(leg.local_departure)} {leg.cityFrom} ({leg.flyFrom})
