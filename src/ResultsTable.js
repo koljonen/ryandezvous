@@ -4,6 +4,7 @@ import React from 'react';
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from '@material-ui/core/CardActions';
 import {
+    Grid,
     Link,
     Tabs,
     Tab,
@@ -188,28 +189,32 @@ function Selected({yourFlight, theirFlight, flights}) {
     const yours = yourFlight && flights.yourFares.filter(c => c.id === yourFlight)[0];
     if(!theirs && !yours) return null;
     return <Paper>
-        {theirs && <Flight flight={theirs}/>}
-        {yours && <Flight flight={yours}/>}
+        <Grid container spacing={10}>
+            {theirs && <Flight flight={theirs}/>}
+            {yours && <Flight flight={yours}/>}
+        </Grid>
     </Paper>
 }
 
 function Flight({flight}) {
-    return <Card key={flight.id}>
-        <CardHeader title={`${flight.cityFrom} -> ${flight.cityTo}`}/>
-        {flight.route.map(
-            leg => {
-                return <div>
-                    <Avatar src={`https://images.kiwi.com/airlines/64/${leg.airline}.png`}/>
-                    <CardContent>
-                        {formatTime(leg.local_departure)} {leg.cityFrom} ({leg.flyFrom})
-                        <br/>
-                        {formatTime(leg.local_arrival)} {leg.cityTo} ({leg.flyTo})
-                    </CardContent>
-                </div>
-            }
-        )}
-        <CardActions>
-            <Link target="_blank" rel="noopener" href={flight.deep_link}>€ {flight.price}</Link>
-        </CardActions>
-    </Card>
+    return <Grid item>
+        <Card key={flight.id}>
+            <CardHeader title={`${flight.cityFrom} -> ${flight.cityTo}`}/>
+            {flight.route.map(
+                leg => {
+                    return <div>
+                        <Avatar src={`https://images.kiwi.com/airlines/64/${leg.airline}.png`}/>
+                        <CardContent>
+                            {formatTime(leg.local_departure)} {leg.cityFrom} ({leg.flyFrom})
+                            <br/>
+                            {formatTime(leg.local_arrival)} {leg.cityTo} ({leg.flyTo})
+                        </CardContent>
+                    </div>
+                }
+            )}
+            <CardActions>
+                <Link target="_blank" rel="noopener" href={flight.deep_link}>€ {flight.price}</Link>
+            </CardActions>
+        </Card>
+    </Grid>
 }
