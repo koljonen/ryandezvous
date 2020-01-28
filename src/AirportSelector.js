@@ -8,6 +8,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import throttle from 'lodash/throttle';
+import cachedFetch from "./cachedFetch";
 
 const useStyles = makeStyles(theme => ({
     icon: {
@@ -16,10 +17,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+const getURL = async (url) => await cachedFetch({
+    url: url,
+    expiry: new Date(new Date() + 1000 * 60 * 60 * 24 * 7)
+});
+
 async function locationSearch({term, id}) {
     const url = 'https://kiwiproxy.herokuapp.com/locations/' + (id ? `id?id=${id}` : `/query?&term=${term}`);
-    const locationJson = await fetch(url);
-    const locations = await locationJson.json();
+    const locations = await getURL(url);
     return locations.locations.map(location => Object.assign(location, {'input': term || id}))
 }
 
