@@ -69,39 +69,38 @@ function fareToDatum({fare, yourFlight, theirFlight}) {
     const there = `${fare.flyFrom} -> ${fare.flyTo} ${formatTime(fare.local_departure)} – ${formatTime(fare.local_arrival)}`;
     const back = `${returnLeg.flyFrom} -> ${returnLeg.flyTo} ${formatTime(returnLeg.local_departure)} – ${formatTime(returnLeg.local_arrival)}`;
     const label = `${price} | ${there} | ${back}`;
-    const tooltip = `${price}<br/>${there}<br/>${back}`;
+    const tooltip = fare.route.reduce(
+        (output, leg) => `${output}<br/>${formatTime(leg.local_departure)} ${leg.flyFrom} -> ${leg.flyTo} ${formatTime(leg.local_arrival)}}`,
+        price
+    );
     const colors = {
         theirs: ['#DC3912', '#FFAAAA'],
         yours: ['#3366CC', '#88AAFF']
     }[fare.yoursOrTheirs];
-    const color1 = fare.id === selection ? colors[1] : colors[0];
-    const color2 = fare.id === selection ? colors[0] : colors[1];
-    return [
-        [
+    const flight_color = fare.id === selection ? colors[1] : colors[0];
+    const gap_color = fare.id === selection ? colors[0] : colors[1];
+    const bars = [];
+    let previousLeg;
+    for(const leg of fare.route) {
+        bars.push([
             fare.id,
             '',
-            `color: ${color1};`,
+            `color: ${flight_color};`,
             tooltip,
-            new Date(fare.utc_departure),
-            new Date(fare.utc_arrival)
-        ],
-        [
+            new Date(leg.utc_departure),
+            new Date(leg.utc_arrival)
+        ]);
+        if(previousLeg) bars.push([
             fare.id,
-            label,
-            `color: ${color2};`,
+            previousLeg.flyTo === fare.flyTo ? label : '',
+            `color: ${gap_color};`,
             tooltip,
-            new Date(fare.utc_arrival),
-            new Date(returnLeg.utc_departure)
-        ],
-        [
-            fare.id,
-            '',
-            `color: ${color1};`,
-            tooltip,
-            new Date(returnLeg.utc_departure),
-            new Date(returnLeg.utc_arrival)
-        ]
-    ];
+            new Date(previousLeg.utc_arrival),
+            new Date(leg.utc_departure)
+        ]);
+        previousLeg = leg;
+    };
+    return bars;
 }
 
 function addYoursOrTheirs(fares, yoursOrTheirs) {
