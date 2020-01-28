@@ -112,6 +112,7 @@ function addYoursOrTheirs(fares, yoursOrTheirs) {
 }
 
 function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFlight, setTheirFlight}) {
+    if(yourFlight && theirFlight) return null;
     if(cityCodeTo in candidates);
     else return null;
     const fares = [
