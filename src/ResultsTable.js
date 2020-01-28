@@ -78,30 +78,28 @@ function fareToDatum({fare, yourFlight, theirFlight}) {
     const color2 = fare.id === selection ? colors[0] : colors[1];
     return [
         [
-            label,
+            fare.id,
             '',
             `color: ${color1};`,
             tooltip,
             new Date(fare.utc_departure),
-            new Date(fare.utc_arrival),
-
+            new Date(fare.utc_arrival)
         ],
         [
-            label,
+            fare.id,
             label,
             `color: ${color2};`,
             tooltip,
             new Date(fare.utc_arrival),
-            new Date(returnLeg.utc_departure),
-
+            new Date(returnLeg.utc_departure)
         ],
         [
-            label,
+            fare.id,
             '',
             `color: ${color1};`,
             tooltip,
             new Date(returnLeg.utc_departure),
-            new Date(returnLeg.utc_arrival),
+            new Date(returnLeg.utc_arrival)
         ]
     ];
 }
@@ -128,13 +126,12 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
 
     const data_param = [
         [
-            { type: 'string', id: 'Room' },
-            { type: 'string', id: 'price' },
+            { type: 'string', id: 'id' },
+            { type: 'string', id: 'label' },
             { type: 'string', role: 'style' },
             { type: 'string', role: 'tooltip', p: {'html': true}},
             { type: 'date', id: 'Start' },
-            { type: 'date', id: 'End' },
-
+            { type: 'date', id: 'End' }
         ],
         ...fares.map(
             fare => fareToDatum({fare:fare, yourFlight: yourFlight, theirFlight: theirFlight})
@@ -145,16 +142,17 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
         eventName: 'select',
         callback: function({chartWrapper}) {
             const chartSelection = chartWrapper.getChart().getSelection();
-            const idx = Math.floor(chartSelection[0].row / 3);
-            const selectedFare = fares[idx];
+            const selectedFareID = data_param[chartSelection[0].row][0];
+            const selectedFare = fares.filter(x => x.id === selectedFareID)[0];
             if(selectedFare.yoursOrTheirs === 'yours') {
                 if(selectedFare.id === yourFlight) setYourFlight('');
                 else setYourFlight(selectedFare.id);
             }
-            else {
+            else if(selectedFare.yoursOrTheirs === 'theirs') {
                 if(selectedFare.id === theirFlight) setTheirFlight('');
                 else setTheirFlight(selectedFare.id);
             }
+            else console.error('unexpected yoursOrTheirs', selectedFare.yoursOrTheirs);
         }
       }
     ];
