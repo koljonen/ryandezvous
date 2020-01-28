@@ -182,13 +182,13 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
 }
 
 function Selected({yourFlight, theirFlight, flights}) {
-    if(!flights || !yourFlight || !theirFlight) return null;
-    const theirs = flights.theirFares.filter(c => c.id === theirFlight)[0];
-    const yours = flights.yourFares.filter(c => c.id === yourFlight)[0];
-    if(!theirs || !yours) return null;
+    if(!flights) return null;
+    const theirs = theirFlight && flights.theirFares.filter(c => c.id === theirFlight)[0];
+    const yours = yourFlight && flights.yourFares.filter(c => c.id === yourFlight)[0];
+    if(!theirs && !yours) return null;
     return <Paper>
-        <Flight flight={theirs}/>
-        <Flight flight={yours}/>
+        {theirs && <Flight flight={theirs}/>}
+        {yours && <Flight flight={yours}/>}
     </Paper>
 }
 
