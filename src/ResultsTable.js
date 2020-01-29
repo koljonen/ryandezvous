@@ -3,6 +3,7 @@ import { Chart } from "react-google-charts";
 import React from 'react';
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from '@material-ui/core/CardActions';
+import CloseIcon from '@material-ui/icons/Close';
 import {
     Grid,
     Link,
@@ -11,7 +12,8 @@ import {
     Paper,
     Card,
     CardContent,
-    Avatar
+    Avatar,
+    IconButton,
 } from '@material-ui/core';
 
 export default function ResultsTable(props) {
@@ -46,6 +48,8 @@ export default function ResultsTable(props) {
             <Selected
                 yourFlight={props.query.yourFlight}
                 theirFlight={props.query.theirFlight}
+                setTheirFlight={setTheirFlight}
+                setYourFlight={setYourFlight}
                 flights={props.candidates[props.query.expand]}
             />
         </Paper>
@@ -180,23 +184,26 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
     );
 }
 
-function Selected({yourFlight, theirFlight, flights}) {
+function Selected({yourFlight, theirFlight, flights, setTheirFlight, setYourFlight}) {
     if(!flights) return null;
     const theirs = theirFlight && flights.theirFares.filter(c => c.id === theirFlight)[0];
     const yours = yourFlight && flights.yourFares.filter(c => c.id === yourFlight)[0];
     if(!theirs && !yours) return null;
     return <Paper>
         <Grid container spacing={10}>
-            {theirs && <Flight flight={theirs}/>}
-            {yours && <Flight flight={yours}/>}
+            {theirs && <Flight flight={theirs} clearFlight={() => setTheirFlight(null)}/>}
+            {yours && <Flight flight={yours} clearFlight={() => setYourFlight(null)}/>}
         </Grid>
     </Paper>
 }
 
-function Flight({flight}) {
+function Flight({flight, clearFlight}) {
     return <Grid item>
         <Card>
-            <CardHeader title={`${flight.cityFrom} -> ${flight.cityTo}`}/>
+            <CardHeader
+                title={`${flight.cityFrom} -> ${flight.cityTo}`}
+                action={<IconButton aria-label="delete" onClick={clearFlight}><CloseIcon/></IconButton>}
+            />
             {flight.route.map(
                 leg => {
                     return <div key={leg.id}>
