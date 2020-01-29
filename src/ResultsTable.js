@@ -26,7 +26,7 @@ export default function ResultsTable(props) {
     const value = airports.indexOf(props.query.expand) !== -1 ? props.query.expand : false;
     return (
         <Paper>
-            <Tabs value={value} onChange={setDestination}>
+            <Tabs variant="scrollable" scrollButtons="auto" value={value} onChange={setDestination}>
                 {Object.values(props.candidates).map(
                     candidate => {
                         const myFirst = candidate.yourFares[0];
