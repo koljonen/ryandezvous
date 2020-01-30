@@ -37,7 +37,7 @@ export default function ResultsTable(props) {
                 )
                 }
             </Tabs>
-            <Expanded
+            <FlightSelector
                 cityCodeTo={props.query.expand}
                 yourFlight={props.query.yourFlight}
                 theirFlight={props.query.theirFlight}
@@ -113,7 +113,7 @@ function addYoursOrTheirs(fares, yoursOrTheirs) {
     });
 }
 
-function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFlight, setTheirFlight}) {
+function FlightSelector({cityCodeTo, candidates, yourFlight, theirFlight, setYourFlight, setTheirFlight}) {
     if(yourFlight && theirFlight) return null;
     if(cityCodeTo in candidates);
     else return null;
