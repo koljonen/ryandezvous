@@ -48,7 +48,7 @@ export default function ResultsTabs(props) {
                 cityCodeTo={props.query.expand}
                 yourFlight={props.query.yourFlight}
                 theirFlight={props.query.theirFlight}
-                flights={props.flights}
+                flights={props.flights[props.query.expand]}
                 setYourFlight={setYourFlight}
                 setTheirFlight={setTheirFlight}
                 sortBy={props.query.sortBy || 'price'}
@@ -127,7 +127,6 @@ function addYoursOrTheirs(fares, yoursOrTheirs) {
 }
 
 function FlightSelector({
-    cityCodeTo,
     flights,
     yourFlight,
     theirFlight,
@@ -140,12 +139,11 @@ function FlightSelector({
     setYourMaxPrice,
     setTheirMaxPrice,
 }) {
+    if(!flights) return null;
     if(yourFlight && theirFlight) return null;
-    if(cityCodeTo in flights);
-    else return null;
     const fares = [
-        ...addYoursOrTheirs(flights[cityCodeTo].yourFares, 'yours'),
-        ...addYoursOrTheirs(flights[cityCodeTo].theirFares, 'theirs'),
+        ...addYoursOrTheirs(flights.yourFares, 'yours'),
+        ...addYoursOrTheirs(flights.theirFares, 'theirs'),
     ];
     fares.sort((x, y) => {
         if(x.id === theirFlight || x.id === yourFlight) return -1;
