@@ -45,7 +45,7 @@ export default function ResultsTable(props) {
                 setYourFlight={setYourFlight}
                 setTheirFlight={setTheirFlight}
             />
-            <Selected
+            <SelectedFlights
                 yourFlight={props.query.yourFlight}
                 theirFlight={props.query.theirFlight}
                 setTheirFlight={setTheirFlight}
@@ -184,7 +184,7 @@ function Expanded({cityCodeTo, candidates, yourFlight, theirFlight, setYourFligh
     );
 }
 
-function Selected({yourFlight, theirFlight, flights, setTheirFlight, setYourFlight}) {
+function SelectedFlights({yourFlight, theirFlight, flights, setTheirFlight, setYourFlight}) {
     if(!flights) return null;
     const theirs = theirFlight && flights.theirFares.filter(c => c.id === theirFlight)[0];
     const yours = yourFlight && flights.yourFares.filter(c => c.id === yourFlight)[0];
