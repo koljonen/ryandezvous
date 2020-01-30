@@ -20,7 +20,7 @@ import {
     IconButton,
 } from '@material-ui/core';
 
-export default function ResultsTable(props) {
+export default function ResultsTabs(props) {
     const setDestination = (event, newValue) => {
         props.setQuery({expand: newValue, theirFlight: null, yourFlight: null});
     };
@@ -29,15 +29,15 @@ export default function ResultsTable(props) {
     const setYourMaxPrice = (event, value) => props.setQuery({yourMaxPrice: value});
     const setTheirMaxPrice = (event, value) => props.setQuery({theirMaxPrice: value});
     const setSortBy = (event, newValue) => props.setQuery({sortBy: event.target.value});
-    const airports = Object.keys(props.candidates);
+    const airports = Object.keys(props.flights);
     const value = airports.indexOf(props.query.expand) !== -1 ? props.query.expand : false;
     return (
         <Paper>
             <Tabs variant="scrollable" scrollButtons="auto" value={value} onChange={setDestination}>
-                {Object.values(props.candidates).map(
-                    candidate => {
-                        const myFirst = candidate.yourFares[0];
-                        const price = minPrice(candidate.yourFares) + minPrice(candidate.theirFares);
+                {Object.values(props.flights).map(
+                    flight => {
+                        const myFirst = flight.yourFares[0];
+                        const price = minPrice(flight.yourFares) + minPrice(flight.theirFares);
                         const label = `€ ${price} ${myFirst.cityTo}, ${myFirst.countryTo.name}`;
                         return <Tab key={myFirst.cityCodeTo} value={myFirst.cityCodeTo} label={label}/>;
                     }
@@ -48,7 +48,7 @@ export default function ResultsTable(props) {
                 cityCodeTo={props.query.expand}
                 yourFlight={props.query.yourFlight}
                 theirFlight={props.query.theirFlight}
-                candidates={props.candidates}
+                flights={props.flights}
                 setYourFlight={setYourFlight}
                 setTheirFlight={setTheirFlight}
                 sortBy={props.query.sortBy || 'price'}
@@ -63,7 +63,7 @@ export default function ResultsTable(props) {
                 theirFlight={props.query.theirFlight}
                 setTheirFlight={setTheirFlight}
                 setYourFlight={setYourFlight}
-                flights={props.candidates[props.query.expand]}
+                flights={props.flights[props.query.expand]}
             />
         </Paper>
     )
@@ -128,7 +128,7 @@ function addYoursOrTheirs(fares, yoursOrTheirs) {
 
 function FlightSelector({
     cityCodeTo,
-    candidates,
+    flights,
     yourFlight,
     theirFlight,
     setYourFlight,
@@ -141,11 +141,11 @@ function FlightSelector({
     setTheirMaxPrice,
 }) {
     if(yourFlight && theirFlight) return null;
-    if(cityCodeTo in candidates);
+    if(cityCodeTo in flights);
     else return null;
     const fares = [
-        ...addYoursOrTheirs(candidates[cityCodeTo].yourFares, 'yours'),
-        ...addYoursOrTheirs(candidates[cityCodeTo].theirFares, 'theirs'),
+        ...addYoursOrTheirs(flights[cityCodeTo].yourFares, 'yours'),
+        ...addYoursOrTheirs(flights[cityCodeTo].theirFares, 'theirs'),
     ];
     fares.sort((x, y) => {
         if(x.id === theirFlight || x.id === yourFlight) return -1;

@@ -58,17 +58,17 @@ function getKey(flight) {
     return flight.cityCodeTo;
 }
 
-function getCandidates({yourFares, theirFares}) {
-    const candidates = {};
+function getFlights({yourFares, theirFares}) {
+    const flights = {};
     for(const destination of Object.keys(theirFares)) {
         if(destination in yourFares);
         else continue;
-        candidates[destination] = {
+        flights[destination] = {
             yourFares: yourFares[destination],
             theirFares: theirFares[destination]
         }
     }
-    return candidates;
+    return flights;
 }
 
 async function* getFares(state) {
@@ -76,7 +76,7 @@ async function* getFares(state) {
     const theirFares = await getFaresFromAirport(state.theirOrigin, state);
     const yourFaresDict = arrayToDict(yourFares);
     const theirFaresDict = arrayToDict(theirFares);
-    yield getCandidates({yourFares: yourFaresDict, theirFares:theirFaresDict});
+    yield getFlights({yourFares: yourFaresDict, theirFares:theirFaresDict});
     for(const destination of Object.keys(theirFaresDict)) {
         if(destination in yourFaresDict) continue;
         const yourFaresToDestination = await getFaresFromAirport(
@@ -84,8 +84,8 @@ async function* getFares(state) {
             {...state, destination: {id: destination}}
         );
         const yourFaresToDestinationDict = arrayToDict(yourFaresToDestination);
-        const newCandidates = getCandidates({yourFares: yourFaresToDestinationDict, theirFares: theirFaresDict});
-        yield newCandidates;
+        const newFlights = getFlights({yourFares: yourFaresToDestinationDict, theirFares: theirFaresDict});
+        yield newFlights;
         // todo: add to dict
     }
     for(const destination of Object.keys(yourFaresDict)) {
@@ -95,8 +95,8 @@ async function* getFares(state) {
             {...state, destination: {id: destination}}
         );
         const theirFaresToDestinationDict = arrayToDict(theirFaresToDestination);
-        const newCandidates = getCandidates({yourFares: yourFaresDict, theirFares: theirFaresToDestinationDict});
-        yield newCandidates;
+        const newFlights = getFlights({yourFares: yourFaresDict, theirFares: theirFaresToDestinationDict});
+        yield newFlights;
         // todo: add to dict
     }
 }

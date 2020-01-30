@@ -2,7 +2,7 @@ import moment from "moment";
 import React from 'react';
 import './App.css';
 import Form from './Form.js';
-import ResultsTable from './ResultsTable.js';
+import ResultsTabs from './ResultsTabs.js';
 import {
   useQueryParams,
   StringParam,
@@ -35,16 +35,16 @@ function App(props) {
         theirMaxPrice: NumberParam,
     });
     const [loading, setLoading] = React.useState(0);
-    const [candidates, setCandidates] = React.useState({});
+    const [flights, setFlights] = React.useState({});
     const startLoading = () => setLoading(loading + 1);
     const finishLoading = () => setLoading(loading - 1);
-    const addCandidates = (newCandidates) => setCandidates({...candidates, ...newCandidates});
-    const clearCandidates = () => setCandidates([]);
+    const addFlights = (newFlights) => setFlights({...flights, ...newFlights});
+    const clearFlights = () => setFlights([]);
     return (
         <div>
             <Form
-                addCandidates={addCandidates}
-                clearCandidates={clearCandidates}
+                addFlights={addFlights}
+                clearFlights={clearFlights}
                 startLoading={startLoading}
                 finishLoading={finishLoading}
                 loading={loading > 0}
@@ -52,7 +52,7 @@ function App(props) {
                 setQuery={setQuery}
             />
             <Loading id="loading" loading={loading > 0}/>
-            <ResultsTable candidates={candidates} setQuery={setQuery} query={query}/>
+            <ResultsTabs flights={flights} setQuery={setQuery} query={query}/>
         </div>
   );
 }

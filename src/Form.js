@@ -111,7 +111,7 @@ class Form extends React.Component {
 
     async doStuff() {
         this.startLoading();
-        this.props.clearCandidates();
+        this.props.clearFlights();
         this.props.setQuery({
             yourOrigin: this.state.yourOrigin.id,
             theirOrigin: this.state.theirOrigin.id,
@@ -119,7 +119,7 @@ class Form extends React.Component {
             departureDate: this.state.departureDate.toDate(),
             returnDate: this.state.returnDate.toDate()
         });
-        for await (const fares of await getFares(this.state)) this.props.addCandidates(fares);
+        for await (const fares of await getFares(this.state)) this.props.addFlights(fares);
         this.finishLoading();
     }
 
