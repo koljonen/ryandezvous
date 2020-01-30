@@ -5,6 +5,10 @@ import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from '@material-ui/core/CardActions';
 import CloseIcon from '@material-ui/icons/Close';
 import {
+    Typography,
+    MenuItem,
+    Slider,
+    Select,
     Grid,
     Link,
     Tabs,
@@ -22,6 +26,9 @@ export default function ResultsTable(props) {
     };
     const setYourFlight = (newValue) => props.setQuery({yourFlight: newValue});
     const setTheirFlight = (newValue) => props.setQuery({theirFlight: newValue});
+    const setYourMaxPrice = (event, value) => props.setQuery({yourMaxPrice: value});
+    const setTheirMaxPrice = (event, value) => props.setQuery({theirMaxPrice: value});
+    const setSortBy = (event, newValue) => props.setQuery({sortBy: event.target.value});
     const airports = Object.keys(props.candidates);
     const value = airports.indexOf(props.query.expand) !== -1 ? props.query.expand : false;
     return (
@@ -44,6 +51,12 @@ export default function ResultsTable(props) {
                 candidates={props.candidates}
                 setYourFlight={setYourFlight}
                 setTheirFlight={setTheirFlight}
+                sortBy={props.query.sortBy || 'price'}
+                setSortBy={setSortBy}
+                yourMaxPrice={props.query.yourMaxPrice}
+                theirMaxPrice={props.query.theirMaxPrice}
+                setYourMaxPrice={setYourMaxPrice}
+                setTheirMaxPrice={setTheirMaxPrice}
             />
             <SelectedFlights
                 yourFlight={props.query.yourFlight}
@@ -113,7 +126,20 @@ function addYoursOrTheirs(fares, yoursOrTheirs) {
     });
 }
 
-function FlightSelector({cityCodeTo, candidates, yourFlight, theirFlight, setYourFlight, setTheirFlight}) {
+function FlightSelector({
+    cityCodeTo,
+    candidates,
+    yourFlight,
+    theirFlight,
+    setYourFlight,
+    setTheirFlight,
+    sortBy,
+    setSortBy,
+    yourMaxPrice,
+    theirMaxPrice,
+    setYourMaxPrice,
+    setTheirMaxPrice,
+}) {
     if(yourFlight && theirFlight) return null;
     if(cityCodeTo in candidates);
     else return null;
@@ -124,7 +150,18 @@ function FlightSelector({cityCodeTo, candidates, yourFlight, theirFlight, setYou
     fares.sort((x, y) => {
         if(x.id === theirFlight || x.id === yourFlight) return -1;
         if(y.id === theirFlight || y.id === yourFlight) return 1;
-        return Math.sign(x.price - y.price);
+        if(sortBy === 'price') return Math.sign(x.price - y.price);
+        if(sortBy === 'time') {
+            const ret = Math.sign(
+                new Date(x.utc_departure) - new Date(y.utc_departure) ||
+                new Date(x.utc_arrival) - new Date(y.utc_arrival) ||
+                new Date(x.utc_arrival) - new Date(y.utc_arrival) ||
+                new Date(x.route[x.route.length - 1].utc_arrival) - new Date(y.route[y.route.length - 1].utc_arrival) ||
+                x.price - y.price
+            );
+            return ret;
+        }
+        return 0;
     });
 
     const data_param = [
@@ -136,7 +173,10 @@ function FlightSelector({cityCodeTo, candidates, yourFlight, theirFlight, setYou
             { type: 'date', id: 'Start' },
             { type: 'date', id: 'End' }
         ],
-        ...fares.map(
+        ...fares.filter(fare => {
+            const maxPrice = {yours: yourMaxPrice, theirs: theirMaxPrice}[fare.yoursOrTheirs];
+            return !maxPrice || maxPrice >= fare.price;
+        }).map(
             fare => fareToDatum({fare:fare, yourFlight: yourFlight, theirFlight: theirFlight})
         ).filter(x => x).flat()
     ];
@@ -159,28 +199,65 @@ function FlightSelector({cityCodeTo, candidates, yourFlight, theirFlight, setYou
         }
       }
     ];
-
+    const yourMax = fares.filter(f => f.yoursOrTheirs === 'yours').reduce((maxPrice, fare) => Math.max(fare.price, maxPrice), 0);
+    const theirMax = fares.filter(f => f.yoursOrTheirs === 'theirs').reduce((maxPrice, fare) => Math.max(fare.price, maxPrice), 0);
+    const yourMin = fares.filter(f => f.yoursOrTheirs === 'yours').reduce((minPrice, fare) => Math.min(fare.price, minPrice), Infinity);
+    const theirMin = fares.filter(f => f.yoursOrTheirs === 'theirs').reduce((minPrice, fare) => Math.min(fare.price, minPrice), Infinity);
     return (
-        <Chart
-            width={'100%'}
-            height={yourFlight && theirFlight ? '200px' : '800px'}
-            chartType="Timeline"
-            loader={<div>Loading Chart</div>}
-            data={data_param}
-            chartEvents={chartEvents} // <- this is event handler
-            options={{
-                timeline: {
-                    colorByRowLabel: false,
-                    groupByRowLabel: true,
-                    showRowLabels: false
-                },
-                tooltip: {
-                    isHtml: true
-                }
+        <div>
+            <Grid container spacing={10}>
+                <Grid item xs/>
+                <Grid item xs>
+                    <Typography gutterBottom>Sorting</Typography>
+                    <Select onChange={setSortBy} value={sortBy}>
+                        <MenuItem value="price">↑Price</MenuItem>
+                        <MenuItem value="time">↑Time</MenuItem>
+                    </Select>
+                </Grid>
+                <Grid item xs>
+                    <Typography gutterBottom>Max price</Typography>
+                    <Slider
+                        defaultValue={yourMaxPrice || yourMax}
+                        onChangeCommitted={setYourMaxPrice}
+                        valueLabelDisplay="auto"
+                        min={yourMin}
+                        max={yourMax}
+                    />
+                </Grid>
+                <Grid item xs>
+                    <Typography gutterBottom>Max price</Typography>
+                    <Slider
+                        defaultValue={theirMaxPrice || theirMax}
+                        onChangeCommitted={setTheirMaxPrice}
+                        valueLabelDisplay="auto"
+                        color="secondary"
+                        min={theirMin}
+                        max={theirMax}
+                    />
+                </Grid>
+                <Grid item xs/>
+            </Grid>
+            <Chart
+                width={'100%'}
+                height={yourFlight && theirFlight ? '200px' : '800px'}
+                chartType="Timeline"
+                loader={<div>Loading Chart</div>}
+                data={data_param}
+                chartEvents={chartEvents} // <- this is event handler
+                options={{
+                    timeline: {
+                        colorByRowLabel: false,
+                        groupByRowLabel: true,
+                        showRowLabels: false
+                    },
+                    tooltip: {
+                        isHtml: true
+                    }
 
-            }}
-            rootProps={{ 'data-testid': '1' }}
-        />
+                }}
+                rootProps={{ 'data-testid': '1' }}
+            />
+        </div>
     );
 }
 

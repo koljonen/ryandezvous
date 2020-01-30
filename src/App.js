@@ -30,6 +30,9 @@ function App(props) {
         expand: StringParam,
         yourFlight: StringParam,
         theirFlight: StringParam,
+        sortBy: StringParam,
+        yourMaxPrice: NumberParam,
+        theirMaxPrice: NumberParam,
     });
     const [loading, setLoading] = React.useState(0);
     const [candidates, setCandidates] = React.useState({});
