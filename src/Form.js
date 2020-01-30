@@ -1,3 +1,4 @@
+import cachedFetch from "./cachedFetch";
 import getFares from './flightsearch.js';
 import Grid from '@material-ui/core/Grid';
 import {
@@ -17,11 +18,15 @@ function nextThursday() {
 
 const requiredParams = ['departureDate', 'returnDate', 'yourOrigin', 'theirOrigin'];
 
+const getLocationURL = async (url) => await cachedFetch({
+    url: url,
+    expiry: new Date(new Date() + 1000 * 60 * 60 * 24 * 7 * 4)
+});
+
 async function fillDefault(whichAirport, state) {
     if(state[whichAirport]) {
         const url = `https://kiwiproxy.herokuapp.com/locations/id?id=${state[whichAirport]}`;
-        const locationJson = await fetch(url);
-        const locations = await locationJson.json();
+        const locations = await getLocationURL(url);
         state[whichAirport] = locations.locations.filter(
             x => x.id === state[whichAirport]
         )[0];
