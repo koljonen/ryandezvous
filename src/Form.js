@@ -67,7 +67,9 @@ class Form extends React.Component {
         if(newMatch.dateFlexibility !== oldMatch.dateFlexibility) {
             this.setState({dateFlexibility: newMatch.dateFlexibility});
         }
-        
+        if(newMatch.max_fly_duration !== oldMatch.max_fly_duration) {
+            this.setState({max_fly_duration: newMatch.max_fly_duration});
+        }
         if(newMatch.max_stopovers !== oldMatch.max_stopovers) {
             this.setState({max_stopovers: newMatch.max_stopovers});
         }

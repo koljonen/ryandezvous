@@ -33,6 +33,7 @@ function App(props) {
         sortBy: StringParam,
         yourMaxPrice: NumberParam,
         theirMaxPrice: NumberParam,
+        max_fly_duration: NumberParam,
     });
     const [loading, setLoading] = React.useState(0);
     const [flights, setFlights] = React.useState({});
