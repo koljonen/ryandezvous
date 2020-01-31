@@ -32,18 +32,15 @@ export default function AirportSelector(props) {
     const classes = useStyles();
     const [inputValue, setInputValue] = React.useState('');
     const [options, setOptions] = React.useState([]);
+    const [value, setValue] = React.useState(props.value);
 
     const handleSearch = (event, value) => {
         setInputValue(event.target.value);
     };
 
     const handleChange = (event, value) => {
-        props.onChange({
-            target:{
-                name: props.name,
-                value: value
-            }
-        });
+        setValue(value);
+        props.onChange({[props.name]: value ? value.id : undefined});
     }
 
     const ourFetch = React.useMemo(
@@ -60,16 +57,22 @@ export default function AirportSelector(props) {
     React.useEffect(
         () => {
             let active = true;
-            if (inputValue === '') {
-                setOptions([]);
-                return undefined;
+            if(
+                typeof value === 'string' ||
+                (value && value.id !== props.value)
+            ) {
+                async function doStuff() {
+                    const locations = await locationSearch({id: props.value});
+                    setValue(locations[0]);
+                }
+                doStuff();
+                return;
             }
+            if(inputValue === '') return;
             ourFetch(
                 inputValue,
                 results => {
-                    if (active) {
-                        setOptions(results || []);
-                    }
+                    if(active) setOptions(results || []);
                 }
             );
 
@@ -77,7 +80,7 @@ export default function AirportSelector(props) {
                 active = false;
             };
         },
-        [inputValue, ourFetch]
+        [inputValue, ourFetch, value, props.value]
     );
 
     return (
@@ -87,7 +90,7 @@ export default function AirportSelector(props) {
             filterOptions={x => x}
             options={options}
             onChange={handleChange}
-            value={props.value}
+            value={value}
             renderInput={params => (
                 <TextField
                     required={props.required}

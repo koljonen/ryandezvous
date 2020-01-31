@@ -24,14 +24,14 @@ const getFaresFromAirport = throttle(
             {
                 path: "v2/search",
                 queryParams: {
-                    fly_from: airport.id,
+                    fly_from: airport,
                     dateFrom: formatKiwiDate(dateFrom),
                     dateTo: formatKiwiDate(dateTo),
                     returnFrom: formatKiwiDate(returnFrom),
                     returnTo: formatKiwiDate(returnTo),
                     curr: 'EUR',
                     ret_from_diff_airport: 0,
-                    fly_to: state.destination ? state.destination.id : undefined,
+                    fly_to: state.destination,
                     max_stopovers: state.max_stopovers || 0,
                     max_fly_duration: state.max_fly_duration,
                 }
@@ -82,7 +82,7 @@ async function* getFares(state) {
         if(destination in yourFaresDict) continue;
         const yourFaresToDestination = await getFaresFromAirport(
             state.yourOrigin,
-            {...state, destination: {id: destination}}
+            {...state, destination: destination}
         );
         const yourFaresToDestinationDict = arrayToDict(yourFaresToDestination);
         const newFlights = getFlights({yourFares: yourFaresToDestinationDict, theirFares: theirFaresDict});
@@ -93,7 +93,7 @@ async function* getFares(state) {
         if(destination in theirFaresDict) continue;
         const theirFaresToDestination = await getFaresFromAirport(
             state.theirOrigin,
-            {...state, destination: {id: destination}}
+            {...state, destination: destination}
         );
         const theirFaresToDestinationDict = arrayToDict(theirFaresToDestination);
         const newFlights = getFlights({yourFares: yourFaresDict, theirFares: theirFaresToDestinationDict});

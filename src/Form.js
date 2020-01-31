@@ -1,4 +1,3 @@
-import cachedFetch from "./cachedFetch";
 import getFares from './flightsearch.js';
 import Grid from '@material-ui/core/Grid';
 import {
@@ -18,82 +17,15 @@ function nextThursday() {
 
 const requiredParams = ['departureDate', 'returnDate', 'yourOrigin', 'theirOrigin'];
 
-const getLocationURL = async (url) => await cachedFetch({
-    url: url,
-    expiry: new Date(new Date() + 1000 * 60 * 60 * 24 * 7 * 4)
-});
-
-async function fillDefault(whichAirport, state) {
-    if(state[whichAirport]) {
-        const url = `https://kiwiproxy.herokuapp.com/locations/id?id=${state[whichAirport]}`;
-        const locations = await getLocationURL(url);
-        state[whichAirport] = locations.locations.filter(
-            x => x.id === state[whichAirport]
-        )[0];
-    }
-}
-
 class Form extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            departureDate: nextThursday(),
-            returnDate: nextThursday().add(4, 'days'),
-            destination: "",
-            ...props.query
-        };
-        
-        this.state.departureDate = moment(this.state.departureDate);
-        this.state.returnDate = moment(this.state.returnDate);
         this.allowSubmit = this.allowSubmit.bind(this);
         this.startLoading = props.startLoading;
         this.finishLoading = props.finishLoading;
-        this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
-        //this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.setDepartureDate = this.setDepartureDate.bind(this);
-        async function fillDefaults(state, allowSubmit, doStuff) {
-            await fillDefault('yourOrigin', state);
-            await fillDefault('theirOrigin', state);
-            await fillDefault('destination', state);
-            if (allowSubmit()) doStuff();
-        }
-        fillDefaults(this.state, this.allowSubmit, this.doStuff);
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        const setState = this.setState.bind(this)
-        const oldMatch = prevProps.query;
-        const newMatch = this.props.query;
-        if(newMatch.returnDate !== oldMatch.returnDate) {
-            this.setState({returnDate: moment(newMatch.returnDate)});
-        }
-        if(newMatch.dateFlexibility !== oldMatch.dateFlexibility) {
-            this.setState({dateFlexibility: newMatch.dateFlexibility});
-        }
-        if(newMatch.max_fly_duration !== oldMatch.max_fly_duration) {
-            this.setState({max_fly_duration: newMatch.max_fly_duration});
-        }
-        if(newMatch.max_stopovers !== oldMatch.max_stopovers) {
-            this.setState({max_stopovers: newMatch.max_stopovers});
-        }
-        if(newMatch.departureDate !== oldMatch.departureDate) this.setDepartureDate(newMatch.departureDate);
-        async function setAirport(which)  {
-            if(newMatch[which] !== oldMatch[which]) {
-                const newState = {};
-                newState[which] = newMatch[which];
-                await fillDefault(which, newState);
-                setState(newState);
-            }
-        }
-        setAirport('yourOrigin');
-        setAirport('theirOrigin');
-        setAirport('destination');
-    }
-    
-    handleChange = function(e) {
-        this.setState({ [e.target.name]: e.target.value });
     }
 
     handleSubmit(event) {
@@ -102,31 +34,24 @@ class Form extends React.Component {
 
     allowSubmit() {
         return requiredParams.reduce(
-            (tot, par) => tot && !!this.state[par],
+            (tot, par) => tot && !!this.props.query[par],
             true
         ) && !this.props.loading;
     }
 
     setDepartureDate(newDate) {
-        if(newDate > this.state.returnDate) {
-            this.setState({
-                returnDate: moment(this.state.returnDate + (newDate - this.state.departureDate))
+        if(newDate > this.props.query.returnDate) {
+            this.props.setQuery({
+                returnDate: moment(this.props.query.returnDate + (newDate - this.props.query.departureDate))
             });
         }
-        this.setState({departureDate: moment(newDate)});
+        this.props.setQuery({departureDate: moment(newDate)});
     }
 
     async doStuff() {
         this.startLoading();
         this.props.clearFlights();
-        this.props.setQuery({
-            yourOrigin: this.state.yourOrigin.id,
-            theirOrigin: this.state.theirOrigin.id,
-            destination: this.state.destination ? this.state.destination.id : undefined,
-            departureDate: this.state.departureDate.toDate(),
-            returnDate: this.state.returnDate.toDate()
-        });
-        for await (const fares of await getFares(this.state)) this.props.addFlights(fares);
+        for await (const fares of await getFares(this.props.query)) this.props.addFlights(fares);
         this.finishLoading();
     }
 
@@ -143,7 +68,7 @@ class Form extends React.Component {
                                 disablePast
                                 variant="inline"
                                 label="Departure"
-                                value={this.state.departureDate}
+                                value={this.props.query.departureDate}
                                 inputVariant="outlined"
                                 onChange={this.setDepartureDate}
                             />
@@ -155,10 +80,10 @@ class Form extends React.Component {
                                 required
                                 variant="inline"
                                 label="Return"
-                                value={this.state.returnDate}
+                                value={this.props.query.returnDate}
                                 inputVariant="outlined"
-                                onChange={d => this.setState({returnDate: d})}
-                                minDate={this.state.departureDate}
+                                onChange={d => this.props.setQuery({returnDate: d})}
+                                minDate={this.props.query.departureDate}
                             />
                             </MuiPickersUtilsProvider>
                     </Grid>
@@ -169,8 +94,8 @@ class Form extends React.Component {
                             required
                             id="yourOrigin"
                             name="yourOrigin"
-                            value={this.state.yourOrigin}
-                            onChange={this.handleChange}
+                            value={this.props.query.yourOrigin}
+                            onChange={this.props.setQuery}
                             label="Your origin"
                             renderInput={this.renderInput}
                         />
@@ -182,8 +107,8 @@ class Form extends React.Component {
                             required
                             id="theirOrigin"
                             name="theirOrigin"
-                            value={this.state.theirOrigin}
-                            onChange={this.handleChange}
+                            value={this.props.query.theirOrigin}
+                            onChange={this.props.setQuery}
                             label="Their origin"
                             renderInput={this.renderInput}
                         />
@@ -194,8 +119,8 @@ class Form extends React.Component {
                             finishLoading={this.finishLoading}
                             id="destination"
                             name="destination"
-                            value={this.state.destination}
-                            onChange={this.handleChange}
+                            value={this.props.query.destination}
+                            onChange={this.props.setQuery}
                             label="Destination"
                             renderInput={this.renderInput}
                         />

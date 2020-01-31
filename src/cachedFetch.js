@@ -7,9 +7,14 @@ export default async function cachedFetch({url, expiry}) {
     }
     const fetched = await fetch(url);
     const data = await fetched.json();
-    localStorage.setItem(
-        url,
-        JSON.stringify({data: data, expiry: expiry})
-    );
+    try {
+        localStorage.setItem(
+            url,
+            JSON.stringify({data: data, expiry: expiry})
+        );
+    }
+    catch(err) { // localStorage is full probably
+        localStorage.clear();
+    }
     return data;
 }
