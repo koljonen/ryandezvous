@@ -11,10 +11,6 @@ import React from 'react';
 import AirportSelector from './AirportSelector.js';
 
 
-function nextThursday() {
-    return moment().add((moment().isoWeekday() >= 4  ? 12 : 4) - moment().isoWeekday(), 'days');
-}
-
 const requiredParams = ['departureDate', 'returnDate', 'yourOrigin', 'theirOrigin'];
 
 class Form extends React.Component {

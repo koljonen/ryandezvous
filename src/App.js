@@ -1,4 +1,3 @@
-import moment from "moment";
 import React from 'react';
 import './App.css';
 import Form from './Form.js';
@@ -10,13 +9,6 @@ import {
   NumberParam,
 } from 'use-query-params';
 
-// for tabulator
-window.moment = moment;
-moment.updateLocale('en', {
-    week: {
-      dow: 1,
-    },
-});
 
 function App(props) {
     const [query, setQuery] = useQueryParams({
