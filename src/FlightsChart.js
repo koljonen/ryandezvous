@@ -1,6 +1,7 @@
+import Immutable from 'seamless-immutable';
+import Timeline from 'react-visjs-timeline'
 import moment from "moment";
 import React from 'react';
-import { Chart } from "react-google-charts";
 
 export default function FlightsChart({
     flights,
@@ -33,63 +34,53 @@ export default function FlightsChart({
         return 0;
     });
 
-    const data_param = [
-        [
-            { type: 'string', id: 'id' },
-            { type: 'string', id: 'label' },
-            { type: 'string', role: 'style' },
-            { type: 'string', role: 'tooltip', p: {'html': true}},
-            { type: 'date', id: 'Start' },
-            { type: 'date', id: 'End' }
-        ],
-        ...fares.filter(fare => {
-            const maxPrice = {yours: yourMaxPrice, theirs: theirMaxPrice}[fare.yoursOrTheirs];
-            return !maxPrice || maxPrice >= fare.price;
-        }).map(
-            fare => fareToDatum({fare:fare, yourFlight: yourFlight, theirFlight: theirFlight})
-        ).filter(x => x).flat()
-    ];
-    const chartEvents=[
-      {
-        eventName: 'select',
-        callback: function({chartWrapper}) {
-            const chartSelection = chartWrapper.getChart().getSelection();
-            const selectedFareID = data_param[chartSelection[0].row][0];
-            const selectedFare = fares.filter(x => x.id === selectedFareID)[0];
-            if(selectedFare.yoursOrTheirs === 'yours') {
-                if(selectedFare.id === yourFlight) setYourFlight('');
-                else setYourFlight(selectedFare.id);
-            }
-            else if(selectedFare.yoursOrTheirs === 'theirs') {
-                if(selectedFare.id === theirFlight) setTheirFlight('');
-                else setTheirFlight(selectedFare.id);
-            }
-            else console.error('unexpected yoursOrTheirs', selectedFare.yoursOrTheirs);
-        }
-      }
-    ];
-    return (
-            <Chart
-                width={'100%'}
-                height={yourFlight && theirFlight ? '200px' : '800px'}
-                chartType="Timeline"
-                loader={<div>Loading Chart</div>}
-                data={data_param}
-                chartEvents={chartEvents} // <- this is event handler
-                options={{
-                    timeline: {
-                        colorByRowLabel: false,
-                        groupByRowLabel: true,
-                        showRowLabels: false
-                    },
-                    tooltip: {
-                        isHtml: true
-                    }
+    const itemsAndGroups = fares.filter(fare => {
+        const maxPrice = {yours: yourMaxPrice, theirs: theirMaxPrice}[fare.yoursOrTheirs];
+        return !maxPrice || maxPrice >= fare.price;
+    }).map(
+        fare => fareToDatum({fare:fare, yourFlight: yourFlight, theirFlight: theirFlight})
+    ).filter(x => x);
+    const items = itemsAndGroups.map(x => x.items).flat();
+    const groups = itemsAndGroups.map((x, idx) => ({...x.group, order:idx}));
 
-                }}
-                rootProps={{ 'data-testid': '1' }}
-            />
-    );
+    const selectHandler = ({items, event}) => {
+        const selectedFareID = items[0].split('/')[0];
+        const selectedFare = fares.filter(x => x.id === selectedFareID)[0];
+        if(selectedFare.yoursOrTheirs === 'yours') {
+            if(selectedFare.id === yourFlight) setYourFlight('');
+            else setYourFlight(selectedFare.id);
+        }
+        else if(selectedFare.yoursOrTheirs === 'theirs') {
+            if(selectedFare.id === theirFlight) setTheirFlight('');
+            else setTheirFlight(selectedFare.id);
+        }
+        else console.error('unexpected yoursOrTheirs', selectedFare.yoursOrTheirs);
+    }
+    const options = {
+        width: '100%',
+        showMajorLabels: true,
+        showCurrentTime: false,
+        verticalScroll: true,
+        zoomable: false,
+        stack: false,
+        type: 'range',
+        maxHeight: '100%',
+        orientation: {
+            axis: 'both',
+        },
+        format: {
+            minorLabels: {
+                minute: 'h:mma',
+                hour: 'ha',
+            }
+        }
+    };
+    return <Timeline
+        options={options}
+        items={Immutable(items)}
+        groups={Immutable(groups)}
+        selectHandler={selectHandler}
+    />;
 }
 
 function addYoursOrTheirs(fares, yoursOrTheirs) {
@@ -108,7 +99,7 @@ function fareToDatum({fare, yourFlight, theirFlight}) {
     const back = `${returnLeg.flyFrom} -> ${returnLeg.flyTo} ${formatTime(returnLeg.local_departure)} – ${formatTime(returnLeg.local_arrival)}`;
     const label = `${price} | ${there} | ${back}`;
     const tooltip = fare.route.reduce(
-        (output, leg) => `${output}<br/>${formatTime(leg.local_departure)} ${leg.flyFrom} -> ${leg.flyTo} ${formatTime(leg.local_arrival)}}`,
+        (output, leg) => `${output}<br/>${formatTime(leg.local_departure)} ${leg.flyFrom} -> ${leg.flyTo} ${formatTime(leg.local_arrival)}}\n`,
         price
     );
     const colors = {
@@ -120,25 +111,34 @@ function fareToDatum({fare, yourFlight, theirFlight}) {
     const bars = [];
     let previousLeg;
     for(const leg of fare.route) {
-        bars.push([
-            fare.id,
-            '',
-            `color: ${flight_color};`,
-            tooltip,
-            new Date(leg.utc_departure),
-            new Date(leg.utc_arrival)
-        ]);
-        if(previousLeg) bars.push([
-            fare.id,
-            previousLeg.flyTo === fare.flyTo ? label : '',
-            `color: ${gap_color};`,
-            tooltip,
-            new Date(previousLeg.utc_arrival),
-            new Date(leg.utc_departure)
-        ]);
+        bars.push({
+            group: fare.id,
+            id: fare.id + '/' + leg.id,
+            content: '✈',
+            style: `font-size: "6px"; background-color: ${flight_color};`,
+            title: tooltip,
+            start: new Date(leg.utc_departure),
+            end: new Date(leg.utc_arrival)
+        });
+        if(previousLeg) bars.push({
+            group: fare.id,
+            id: fare.id + '/' + leg.id + '/gap',
+            content: previousLeg.flyTo === fare.flyTo ? label : previousLeg.flyTo,
+            style: `font-size: "6px"; background-color: ${gap_color};`,
+            title: tooltip,
+            start: new Date(previousLeg.utc_arrival),
+            end: new Date(leg.utc_departure)
+        });
         previousLeg = leg;
     };
-    return bars;
+    return {
+        items: bars,
+        group: {
+            id: fare.id,
+            title: label,
+            content: ''
+        }
+    };
 }
 
 function formatTime(time) {
