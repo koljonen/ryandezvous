@@ -3,7 +3,7 @@ import Timeline from 'react-visjs-timeline'
 import moment from "moment";
 import React from 'react';
 
-export default function FlightsChart({
+function FlightsChart({
     flights,
     yourFlight,
     theirFlight,
@@ -144,3 +144,13 @@ function fareToDatum({fare, yourFlight, theirFlight}) {
 function formatTime(time) {
     return moment(time).format('DD MMM HH:mm');
 }
+
+const equal = (x, y, keys) => {
+    for(const key of keys) if(x[key] !== y[key]) return false;
+    return true;
+}
+
+export default React.memo(
+    FlightsChart,
+    (x, y) => equal(x, y, ['flights', 'yourFlight', 'theirFlight', 'sortBy', 'yourMaxPrice', 'theirMaxPrice'])
+);
