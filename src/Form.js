@@ -1,3 +1,5 @@
+import TextField from '@material-ui/core/TextField';
+import Switch from '@material-ui/core/Switch';
 import getFares from './flightsearch.js';
 import Grid from '@material-ui/core/Grid';
 import {
@@ -21,6 +23,8 @@ class Form extends React.Component {
         this.finishLoading = props.finishLoading;
         this.handleSubmit = this.handleSubmit.bind(this);
         this.doStuff = this.doStuff.bind(this);
+        this.setSwitchValue = this.setSwitchValue.bind(this);
+        this.seTextBoxValue = this.seTextBoxValue.bind(this);
         this.setDepartureDate = this.setDepartureDate.bind(this);
     }
 
@@ -52,12 +56,21 @@ class Form extends React.Component {
     }
 
     renderInput = input => input.name;
+    
+    setSwitchValue(event, value) {
+        this.props.setQuery({[event.target.name]: value});
+    }
+
+    seTextBoxValue(event, value) {
+        this.props.setQuery({[event.target.name]: event.target.value});
+    }
 
     render() {
+        console.log(this.props.query, this.props.query.showAdvancedSettings);
         return (
             <form onSubmit={this.handleSubmit} >
                 <Grid container spacing={2}>
-                    <Grid item sm={6} md={3} xl={2}>
+                    <Grid item sm={6} md={3} lg={2} xl={1}>
                         <MuiPickersUtilsProvider name="departureDate" utils={MomentUtils}>
                             <DatePicker
                                 required
@@ -68,9 +81,19 @@ class Form extends React.Component {
                                 inputVariant="outlined"
                                 onChange={this.setDepartureDate}
                             />
-                            </MuiPickersUtilsProvider>
+                        </MuiPickersUtilsProvider>
+                        {
+                            this.props.query.showAdvancedSettings &&
+                            <TextField
+                                label="+/- days"
+                                name="departureDateFlexibility"
+                                onChange={this.seTextBoxValue}
+                                type="number"
+                                value={this.props.query.departureDateFlexibility || 0}
+                            />
+                        }
                     </Grid>
-                    <Grid item sm={6} md={3} xl={2}>
+                    <Grid item sm={6} md={3} lg={2} xl={1}>
                         <MuiPickersUtilsProvider name="returnDate" utils={MomentUtils}>
                             <DatePicker
                                 required
@@ -81,9 +104,19 @@ class Form extends React.Component {
                                 onChange={d => this.props.setQuery({returnDate: d})}
                                 minDate={this.props.query.departureDate}
                             />
-                            </MuiPickersUtilsProvider>
+                        </MuiPickersUtilsProvider>
+                        {
+                            this.props.query.showAdvancedSettings &&
+                            <TextField
+                                label="+/- days"
+                                name="returnDateFlexibility"
+                                onChange={this.seTextBoxValue}
+                                type="number"
+                                value={this.props.query.returnDateFlexibility || 0}
+                            />
+                        }
                     </Grid>
-                    <Grid item sm={6} md={3} xl={2}>
+                    <Grid item sm={6} md={3} lg={2} xl={1}>
                         <AirportSelector
                             startLoading={this.startLoading}
                             finishLoading={this.finishLoading}
@@ -96,7 +129,7 @@ class Form extends React.Component {
                             renderInput={this.renderInput}
                         />
                     </Grid>
-                    <Grid item sm={6} md={3} xl={2}>
+                    <Grid item sm={6} md={3} lg={2} xl={1}>
                         <AirportSelector
                             startLoading={this.startLoading}
                             finishLoading={this.finishLoading}
@@ -109,7 +142,7 @@ class Form extends React.Component {
                             renderInput={this.renderInput}
                         />
                     </Grid>
-                    <Grid item sm={6} md={3} xl={2}>
+                    <Grid item sm={6} md={3} lg={2} xl={1}>
                         <AirportSelector
                             startLoading={this.startLoading}
                             finishLoading={this.finishLoading}
@@ -121,7 +154,10 @@ class Form extends React.Component {
                             renderInput={this.renderInput}
                         />
                     </Grid>
-                    <Grid item sm={6} md={3} xl={2}>
+                    <Grid item xl={1}>
+                        <Switch name="showAdvancedSettings" checked={this.props.query.showAdvancedSettings} onChange={this.setSwitchValue}/>
+                    </Grid>
+                    <Grid item sm={6} md={3} lg={2} xl={1}>
                         <Button variant="contained" color="primary" disabled={!this.allowSubmit()} onClick={this.doStuff}>Search</Button>
                     </Grid>
                 </Grid>

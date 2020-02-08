@@ -14,11 +14,12 @@ function addDays(date, days) {
 
 const getFaresFromAirport = throttle(
     async function (airport, state) {
-        const dateFlexibility = state.dateFlexibility || 0;
-        const dateFrom = addDays(state.departureDate, -dateFlexibility);
-        const dateTo = addDays(state.departureDate, dateFlexibility);
-        const returnFrom = addDays(state.returnDate, -dateFlexibility);
-        const returnTo = addDays(state.returnDate, dateFlexibility);
+        const departureDateFlexibility = state.departureDateFlexibility || 0;
+        const returnDateFlexibility = state.returnDateFlexibility || 0;
+        const dateFrom = addDays(state.departureDate, -departureDateFlexibility);
+        const dateTo = addDays(state.departureDate, departureDateFlexibility);
+        const returnFrom = addDays(state.returnDate, -returnDateFlexibility);
+        const returnTo = addDays(state.returnDate, returnDateFlexibility);
         const fareURL = buildUrl(
             'https://kiwiproxy.herokuapp.com',
             {

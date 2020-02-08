@@ -7,6 +7,7 @@ import {
   StringParam,
   DateParam,
   NumberParam,
+  BooleanParam,
 } from 'use-query-params';
 
 
@@ -17,7 +18,8 @@ function App(props) {
         yourOrigin: StringParam,
         departureDate: DateParam,
         returnDate: DateParam,
-        dateFlexibility: NumberParam,
+        departureDateFlexibility: NumberParam,
+        returnDateFlexibility: NumberParam,
         max_stopovers: NumberParam,
         expand: StringParam,
         yourFlight: StringParam,
@@ -26,6 +28,7 @@ function App(props) {
         yourMaxPrice: NumberParam,
         theirMaxPrice: NumberParam,
         max_fly_duration: NumberParam,
+        showAdvancedSettings: BooleanParam,
     });
     const [loading, setLoading] = React.useState(0);
     const [flights, setFlights] = React.useState({});

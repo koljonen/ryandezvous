@@ -85,7 +85,6 @@ export default function AirportSelector(props) {
 
     return (
         <Autocomplete
-            style={{ width: "240px" }}
             getOptionLabel={option => (typeof option === 'string' ? option : option.name)}
             filterOptions={x => x}
             options={options}
